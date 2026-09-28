@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>AKI's Poona College – Online Fee Payment System</title>
+<meta name="description" content="AKI's Poona College – Secure Online Fee Payment Portal for Students and Teacher/Admin.">
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcodejs@1.0.0/qrcode.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+        colors: {
+          brand: { 50:'#f0fdfa',100:'#ccfbf1',200:'#99f6e4',300:'#5eead4',400:'#2dd4bf',500:'#14b8a6',600:'#0d9488',700:'#0f766e',800:'#115e59',900:'#134e4a' }
+        }
+      }
+    }
+  }
+</script>
+<style>
+  /* ============================================================
+     GLOBAL STYLES
+     ============================================================ */
+  html { scroll-behavior: smooth; -webkit-tap-highlight-color: transparent; }
+  body { font-family: 'Inter', system-ui, sans-serif; background: #f4f7f6; color: #0f172a; }
+  .glass { background: rgba(255,255,255,.85); backdrop-filter: blur(10px); }
+  .card { background:#fff; border-radius: 1.25rem; box-shadow: 0 1px 2px rgba(15,23,42,.04), 0 8px 24px -12px rgba(13,148,136,.25); border:1px solid rgba(15,118,110,.08); }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:.5rem; font-weight:600; border-radius:.85rem; padding:.7rem 1.15rem; transition: all .2s ease; cursor:pointer; user-select:none; }
+  .btn:active { transform: scale(.97); }
+  .btn-primary { background: linear-gradient(135deg,#0d9488,#0f766e); color:#fff; box-shadow: 0 8px 20px -8px rgba(13,148,136,.6); }
+  .btn-primary:hover { filter: brightness(1.07); box-shadow: 0 12px 26px -10px rgba(13,148,136,.7); }
+  .btn-outline { border:1.5px solid #cbd5e1; background:#fff; color:#0f172a; }
+  .btn-outline:hover { border-color:#0d9488; color:#0f766e; background:#f0fdfa; }
+  .btn-danger { background:#fee2e2; color:#b91c1c; }
+  .btn-danger:hover { background:#fecaca; }
+  .btn-ghost { color:#334155; }
+  .btn-ghost:hover { background:#f1f5f9; }
+  .input { width:100%; border:1.5px solid #e2e8f0; border-radius:.85rem; padding:.7rem .95rem; font-size:.95rem; background:#fff; transition: border-color .2s, box-shadow .2s; }
+  .input:focus { outline:none; border-color:#0d9488; box-shadow: 0 0 0 4px rgba(13,148,136,.12); }
+  .label { display:block; font-size:.78rem; font-weight:600; color:#475569; margin-bottom:.35rem; letter-spacing:.02em; text-transform:uppercase; }
+  .badge { display:inline-flex; align-items:center; gap:.35rem; font-size:.72rem; font-weight:700; padding:.28rem .7rem; border-radius:999px; letter-spacing:.03em; }
+  .badge-paid { background:#dcfce7; color:#15803d; }
+  .badge-pending { background:#fef3c7; color:#b45309; }
+  .badge-created { background:#e0f2fe; color:#0369a1; }
+  .badge-failed { background:#fee2e2; color:#b91c1c; }
+  .badge-test { background:#ede9fe; color:#6d28d9; }
+  .badge-dot::before { content:''; width:.45rem; height:.45rem; border-radius:50%; background:currentColor; }
+  .nav-item { display:flex; align-items:center; gap:.75rem; padding:.7rem .9rem; border-radius:.85rem; font-weight:500; color:#cbd5e1; transition:all .18s; cursor:pointer; }
+  .nav-item:hover { background:rgba(255,255,255,.08); color:#fff; }
+  .nav-item.active { background:rgba(255,255,255,.14); color:#fff; box-shadow: inset 3px 0 0 #2dd4bf; }
+  .fade-in { animation: fadeIn .4s ease both; }
+  .slide-up { animation: slideUp .45s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes fadeIn { from{opacity:0} to{opacity:1} }
+  @keyframes slideUp { from{opacity:0; transform:translateY(14px)} to{opacity:1; transform:none} }
+  .stagger > * { animation: slideUp .45s cubic-bezier(.2,.8,.2,1) both; }
+  .stagger > *:nth-child(1){animation-delay:.02s}.stagger > *:nth-child(2){animation-delay:.07s}.stagger > *:nth-child(3){animation-delay:.12s}.stagger > *:nth-child(4){animation-delay:.17s}.stagger > *:nth-child(5){animation-delay:.22s}.stagger > *:nth-child(6){animation-delay:.27s}
+  .skeleton { background: linear-gradient(90deg,#eef2f1 25%,#f8fafa 50%,#eef2f1 75%); background-size:200% 100%; animation: shimmer 1.2s infinite; border-radius:.75rem; }
+  @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .pulse-ring { position:relative; }
+  .pulse-ring::after { content:''; position:absolute; inset:-6px; border-radius:50%; border:2px solid #14b8a6; animation: ring 1.6s ease-out infinite; }
+  @keyframes ring { 0%{transform:scale(.8);opacity:1} 100%{transform:scale(1.5);opacity:0} }
+  .spinner { width:1.25rem; height:1.25rem; border:2.5px solid #99f6e4; border-top-color:#0d9488; border-radius:50%; animation: spin .8s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg);} }
+  .table-wrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+  table.tbl { width:100%; border-collapse:separate; border-spacing:0; font-size:.88rem; min-width:640px; }
+  table.tbl th { text-align:left; font-size:.72rem; text-transform:uppercase; letter-spacing:.05em; color:#64748b; font-weight:700; padding:.75rem .9rem; background:#f8fafc; border-bottom:1px solid #e2e8f0; }
+  table.tbl td { padding:.8rem .9rem; border-bottom:1px solid #f1f5f9; vertical-align:middle; }
+  table.tbl tr:last-child td { border-bottom:none; }
+  table.tbl tr:hover td { background:#fafdfc; }
+  .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .toast { animation: toastIn .35s cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes toastIn { from{opacity:0; transform:translateY(16px) scale(.96)} to{opacity:1; transform:none} }
+  .modal-bg { animation: fadeIn .2s ease both; }
+  .modal-box { animation: slideUp .3s cubic-bezier(.2,.8,.2,1) both; }
+  .tree { font-family: ui-monospace, Menlo, monospace; font-size:.8rem; line-height:1.55; white-space:pre; color:#e2e8f0; }
+  #qrcode img, #qrcode canvas { margin:0 auto; border-radius:.5rem; }
+  .bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
+  .tab-btn { display:flex; flex-direction:column; align-items:center; gap:.15rem; font-size:.68rem; font-weight:600; color:#64748b; padding:.5rem .25rem; flex:1; transition:color .2s; }
+  .tab-btn.active { color:#0f766e; }
+  .tab-btn svg { width:1.35rem; height:1.35rem; }
+  .watermark { position:absolute; inset:0; display:flex; align-items:center; justify-content:center; pointer-events:none; }
+  .watermark span { font-size:4rem; font-weight:800; color:rgba(109,40,217,.07); transform:rotate(-24deg); letter-spacing:.2em; }
+  ::-webkit-scrollbar { width:8px; height:8px; } ::-webkit-scrollbar-thumb { background:#cbd5e1; border-radius:8px; }
+
+  /* ============================================================
+     PRINT – only the receipt prints
+     ============================================================ */
+  @media print {
+    body * { visibility: hidden !important; }
+    #receipt-print, #receipt-print * { visibility: visible !important; }
+    #receipt-print { position:absolute !important; left:0; top:0; width:100%; box-shadow:none !important; border:none !important; margin:0 !important; }
+    .no-print { display:none !important; }
+  }
+</style>
+</head>
+<body class="min-h-screen antialiased">
+
+<div id="app" class="min-h-screen"></div>
+<div id="toasts" class="fixed bottom-20 md:bottom-6 right-4 left-4 md:left-auto z-[90] flex flex-col gap-2 items-end pointer-events-none"></div>
+<div id="modal-root"></div>
+
+<script>
+/* ==================================================================================================
+   AKI's POONA COLLEGE – ONLINE FEE PAYMENT SYSTEM  (Single-file interactive demo)
+   ==================================================================================================
+   ARCHITECTURE NOTE (READ THIS):
+   ------------------------------
+   This single HTML file demonstrates BOTH portals (Student + Teacher/Admin) with a fully working UI.
+   Because an iframe demo cannot run Node.js/PostgreSQL, the "backend" below (`Server` object) is a
+   SIMULATED server layer that mirrors the REAL API contract of the production project:
+
+       /project
+       ├── server.js               ← Express server (auth, rate-limit, helmet, routes)
+       ├── package.json
+       ├── .env.example            ← DATABASE_URL, PAYMENT_GATEWAY_KEY_ID, PAYMENT_GATEWAY_KEY_SECRET,
+       │                              PAYMENT_WEBHOOK_SECRET, TEACHER_ADMIN_SECRET, SESSION_SECRET
+       ├── public/  (index.html, student.html, teacher.html, login.html, css/, js/, assets/)
+       ├── routes/  (auth.js, students.js, fees.js, payments.js, receipts.js)
+       └── database/ (schema.sql, README.md)
+
+   SECURITY RULES ENFORCED IN THIS DEMO (and required in production):
+     • The Student UI NEVER receives payment_settings (UPI destination / gateway keys). Only the
+       server builds the payment QR/intent from its configuration → `Server.createOrder()`.
+     • There is NO "Payment Successful" button for the student. Status changes from PENDING → PAID
+       ONLY via `Server.webhook()`, which verifies an HMAC-SHA256 signature against the webhook secret,
+       checks amount & order, and is idempotent (duplicate confirmations are ignored).
+     • Receipts are generated ONLY after a verified webhook.
+     • Passwords are stored as hashes (SHA-256 here for the demo; use bcrypt/argon2 on the server).
+     • Gateway mode is "sandbox" until the authorised college adds real credentials on the server.
+     • Transaction IDs are never invented by the frontend – they come only from the gateway webhook.
+   ================================================================================================== */
+
+/* ------------------------------------------------------------------
+   Utilities
+------------------------------------------------------------------- */
+const $ = (s, el=document) => el.querySelector(s);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const inr = (n) => '₹' + Number(n).toLocaleString('en-IN', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+const fmtDate = (iso) => { if(!iso) return '—'; const d = new Date(iso); return `${String(d.getDate()).padStart(2,'0')}/${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`; };
+const fmtDateTime = (iso) => { if(!iso) return '—'; const d = new Date(iso); return fmtDate(iso) + ' ' + d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}); };
+const uid = (p='') => p + Date.now().toString(36).toUpperCase() + Math.random().toString(36).slice(2,7).toUpperCase();
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+async function sha256(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+  return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+async function hmacSha256(secret, message){
+  const key = await crypto.subtle.importKey('raw', new TextEncoder().encode(secret), {name:'HMAC', hash:'SHA-256'}, false, ['sign']);
+  const sig = await crypto.subtle.sign('HMAC', key, new TextEncoder().encode(message));
+  return [...new Uint8Array(sig)].map(b=>b.toString(16).padStart(2,'0')).join('');
+}
+
+function toast(msg, type='info'){
+  const colors = { info:'bg-slate-900 text-white', success:'bg-brand-700 text-white', error:'bg-red-600 text-white', warn:'bg-amber-500 text-white' };
+  const el = document.createElement('div');
+  el.className = `toast pointer-events-auto px-4 py-3 rounded-xl shadow-xl text-sm font-medium max-w-sm ${colors[type]}`;
+  el.textContent = msg;
+  $('#toasts').appendChild(el);
+  setTimeout(()=>{ el.style.transition='all .3s'; el.style.opacity='0'; el.style.transform='translateY(10px)'; setTimeout(()=>el.remove(), 300); }, 3200);
+}
+
+/* ------------------------------------------------------------------
+   SIMULATED DATABASE  (mirrors database/schema.sql)
+   Tables: users, students, teachers, fees, payments, receipts,
+           college_settings, payment_settings
+------------------------------------------------------------------- */
+const DB_KEY = 'aki_poona_fee_portal_v1';
+
+async function seedDatabase(){
+  // DEMO TEST DATA (as requested in the project brief)
+  return {
+    college_settings: {
+      name: "AKI's Poona College",
+      tagline: 'Online Fee Payment System',
+      logo_text: 'APC',
+      address: 'Camp, Pune, Maharashtra – 411001',
+      phone: '+91 20 0000 0000',
+      email: 'accounts@akipoonacollege.edu.in',
+      website: 'www.akipoonacollege.edu.in'
+    },
+    // SERVER-ONLY. Never sent to student clients.
+    payment_settings: {
+      upi_id: '8983503264@fam',                 // configured test destination (Teacher/Admin editable)
+      payee_name: "AKI's Poona College",
+      gateway_provider: 'Razorpay / PhonePe PG (authorised)',
+      gateway_mode: 'sandbox',                  // 'sandbox' | 'live'
+      gateway_key_id: 'rzp_test_XXXXXXXXXXXX',   // ← replace with authorised college TEST key id
+      gateway_key_secret_set: true,             // real secret lives ONLY in server .env
+      webhook_secret: 'demo_webhook_secret_change_me', // .env PAYMENT_WEBHOOK_SECRET (server-only)
+      qr_size: 220
+    },
+    teachers: [
+      { id:'T1', username:'admin', name:'Accounts Admin', role:'admin', password_hash: await sha256('admin123'), active:true }
+    ],
+    students: [
+      { id:'S1', student_id:'STU001', roll_no:'21', name:'Zaid Sayyed', class:'12th', stream:'Commerce', academic_year:'2026-27', mobile:'', active:true, password_hash: await sha256('student123') }
+    ],
+    fees: [
+      { id:'F1', student_id:'S1', fee_type:'Other/Misc Fee', amount:10, due_date:'2026-09-30', description:'Miscellaneous college charges', status:'PENDING', created_at: new Date().toISOString() },
+      { id:'F2', student_id:'S1', fee_type:'Other/Misc Fee', amount:660, due_date:'2026-08-31', description:'Sample seed record for UI demonstration', status:'PAID', created_at:'2026-08-01T09:00:00.000Z' }
+    ],
+    payments: [
+      // Sample seed record (clearly marked DEMO-SEED). Real records are created only by the gateway webhook.
+      { id:'P1', student_id:'S1', fee_id:'F2', amount:660, order_id:'ORD-DEMO-SEED-0001', transaction_id:'DEMO-SEED-TXN-0001', status:'PAID', payment_method:'UPI (demo seed)', mode:'sandbox', created_at:'2026-08-24T10:10:00.000Z', paid_at:'2026-08-24T10:12:30.000Z' }
+    ],
+    receipts: [
+      { id:'R1', payment_id:'P1', receipt_no:'APC/2026-27/0001', generated_at:'2026-08-24T10:12:31.000Z' }
+    ],
+    audit_log: []
+  };
+}
+
+/* ------------------------------------------------------------------
+   SIMULATED SERVER LAYER  (mirrors routes/*.js)
+   Everything here would be Node/Express + PostgreSQL in production.
+------------------------------------------------------------------- */
+const Server = {
+  db: null,
+  async init(){
+    const raw = localStorage.getItem(DB_KEY);
+    this.db = raw ? JSON.parse(raw) : await seedDatabase();
+    if(!raw) this.save();
+  },
+  save(){ localStorage.setItem(DB_KEY, JSON.stringify(this.db)); },
+  log(action, by, meta={}){ this.db.audit_log.unshift({ id:uid('LOG'), action, by, meta, at:new Date().toISOString() }); this.db.audit_log = this.db.audit_log.slice(0,200); },
+  async resetDemo(){ this.db = await seedDatabase(); this.save(); },
+
+  /* ---------------- routes/auth.js ---------------- */
+  async loginStudent(student_id, password){
+    await sleep(450); // network latency
+    const s = this.db.students.find(x => x.student_id.toLowerCase() === String(student_id).trim().toLowerCase());
+    if(!s || !s.active) throw new Error('Invalid Student ID or password.');
+    if((await sha256(password)) !== s.password_hash) throw new Error('Invalid Student ID or password.');
+    this.log('STUDENT_LOGIN', s.student_id);
+    return { role:'student', id:s.id, name:s.name };
+  },
+  async loginTeacher(username, password){
+    await sleep(450);
+    const t = this.db.teachers.find(x => x.username.toLowerCase() === String(username).trim().toLowerCase());
+    if(!t || !t.active) throw new Error('Invalid credentials.');
+    if((await sha256(password)) !== t.password_hash) throw new Error('Invalid credentials.');
+    this.log('TEACHER_LOGIN', t.username);
+    return { role:'teacher', id:t.id, name:t.name };
+  },
+
+  /* ---------------- Public college info (safe for students) ---------------- */
+  publicCollege(){ const c = this.db.college_settings; return { name:c.name, tagline:c.tagline, logo_text:c.logo_text, address:c.address, phone:c.phone, email:c.email, website:c.website }; },
+
+  /* ---------------- routes/students.js (student-scoped) ---------------- */
+  // Authorization: returns ONLY the logged-in student's data. NO payment_settings are included.
+  studentView(sessionStudentId){
+    const s = this.db.students.find(x => x.id === sessionStudentId);
+    if(!s) throw new Error('Unauthorized');
+    const { password_hash, ...profile } = s;
+    const fees = this.db.fees.filter(f => f.student_id === s.id);
+    const payments = this.db.payments.filter(p => p.student_id === s.id);
+    const receipts = this.db.receipts.filter(r => payments.some(p => p.id === r.payment_id));
+    return { profile, fees, payments, receipts, college: this.publicCollege() };
+  },
+
+  /* ---------------- routes/payments.js : POST /api/payments/create-order ---------------- */
+  // Server creates a payment ORDER (not a payment). Builds the QR from server-side payment_settings.
+  // The student client receives an opaque QR payload + intent URL — never the config itself.
+  async createOrder(sessionStudentId, feeId){
+    await sleep(600);
+    const fee = this.db.fees.find(f => f.id === feeId && f.student_id === sessionStudentId);
+    if(!fee) throw new Error('Fee not found or not yours.');
+    if(fee.status === 'PAID') throw new Error('This fee is already paid.');
+    // Re-use an open order if it exists (prevents duplicate orders)
+    let order = this.db.payments.find(p => p.fee_id === fee.id && p.status === 'CREATED');
+    if(!order){
+      order = { id:uid('P'), student_id:sessionStudentId, fee_id:fee.id, amount:fee.amount, order_id:'ORD' + Date.now() + Math.floor(Math.random()*900+100), transaction_id:null, status:'CREATED', payment_method:null, mode:this.db.payment_settings.gateway_mode, created_at:new Date().toISOString(), paid_at:null };
+      this.db.payments.push(order); this.save();
+      this.log('ORDER_CREATED', sessionStudentId, { order_id: order.order_id, amount: order.amount });
+    }
+    const ps = this.db.payment_settings;
+    // In production the gateway SDK returns this payload; here the server composes a standard UPI intent.
+    const payload = `upi://pay?pa=${encodeURIComponent(ps.upi_id)}&pn=${encodeURIComponent(ps.payee_name)}&am=${Number(fee.amount).toFixed(2)}&cu=INR&tn=${encodeURIComponent('Fee ' + order.order_id)}&tr=${encodeURIComponent(order.order_id)}`;
+    return { order_id: order.order_id, amount: order.amount, fee_type: fee.fee_type, qr_payload: payload, intent_url: payload, mode: ps.gateway_mode, qr_size: ps.qr_size, gateway_key_id: ps.gateway_mode === 'live' ? ps.gateway_key_id : undefined };
+  },
+  // GET /api/payments/status/:orderId  (student polls this; status only changes via webhook)
+  orderStatus(sessionStudentId, orderId){
+    const p = this.db.payments.find(x => x.order_id === orderId && x.student_id === sessionStudentId);
+    if(!p) throw new Error('Order not found');
+    const receipt = this.db.receipts.find(r => r.payment_id === p.id);
+    return { status: p.status, receipt_id: receipt?.id || null, payment_id: p.id };
+  },
+
+  /* ---------------- routes/payments.js : POST /api/payments/webhook ---------------- */
+  // THE ONLY PATH THAT CAN MARK A PAYMENT AS PAID.
+  // 1) verify HMAC-SHA256 signature with PAYMENT_WEBHOOK_SECRET (server-only)
+  // 2) find order, verify amount, ensure idempotency
+  // 3) update payments + fees, 4) generate receipt
+  async webhook(rawBody, signatureHeader){
+    await sleep(400);
+    const secret = this.db.payment_settings.webhook_secret;
+    const expected = await hmacSha256(secret, rawBody);
+    if(!signatureHeader || expected !== String(signatureHeader).trim().toLowerCase()){
+      this.log('WEBHOOK_REJECTED_BAD_SIGNATURE', 'gateway');
+      return { ok:false, http:401, message:'Invalid webhook signature. Payment NOT updated.' };
+    }
+    let evt; try { evt = JSON.parse(rawBody); } catch { return { ok:false, http:400, message:'Malformed payload.' }; }
+    if(evt.event !== 'payment.captured') return { ok:true, http:200, message:`Event "${evt.event}" acknowledged, no action.` };
+    const p = this.db.payments.find(x => x.order_id === evt.order_id);
+    if(!p) return { ok:false, http:404, message:'Unknown order_id. Ignored.' };
+    if(p.status === 'PAID') return { ok:true, http:200, message:'Duplicate webhook ignored (already PAID).' };
+    if(Number(evt.amount) !== Number(p.amount)) { this.log('WEBHOOK_AMOUNT_MISMATCH','gateway',{order_id:p.order_id}); return { ok:false, http:400, message:'Amount mismatch. Flagged for review.' }; }
+    if(!evt.transaction_id) return { ok:false, http:400, message:'Missing gateway transaction_id.' };
+    if(this.db.payments.some(x => x.transaction_id === evt.transaction_id)) return { ok:false, http:409, message:'transaction_id already used.' };
+    // ---- Verified: update DB (transactional in production) ----
+    p.status = 'PAID'; p.transaction_id = evt.transaction_id; p.payment_method = evt.method || 'UPI'; p.paid_at = evt.paid_at || new Date().toISOString(); p.mode = this.db.payment_settings.gateway_mode;
+    const fee = this.db.fees.find(f => f.id === p.fee_id); if(fee) fee.status = 'PAID';
+    const seq = String(this.db.receipts.length + 1).padStart(4,'0');
+    const student = this.db.students.find(s => s.id === p.student_id);
+    const receipt = { id:uid('R'), payment_id:p.id, receipt_no:`APC/${student?.academic_year || 'NA'}/${seq}`, generated_at:new Date().toISOString() };
+    this.db.receipts.push(receipt); this.save();
+    this.log('PAYMENT_VERIFIED_PAID', 'gateway', { order_id:p.order_id, transaction_id:p.transaction_id });
+    return { ok:true, http:200, message:`Verified. Order ${p.order_id} marked PAID. Receipt ${receipt.receipt_no} generated.` };
+  },
+
+  /* ---------------- routes/receipts.js ---------------- */
+  receiptView(receiptId, session){
+    const r = this.db.receipts.find(x => x.id === receiptId); if(!r) throw new Error('Receipt not found');
+    const p = this.db.payments.find(x => x.id === r.payment_id);
+    if(session.role === 'student' && p.student_id !== session.id) throw new Error('Unauthorized');
+    if(p.status !== 'PAID') throw new Error('Receipt available only for verified payments');
+    const s = this.db.students.find(x => x.id === p.student_id);
+    const f = this.db.fees.find(x => x.id === p.fee_id);
+    return { receipt:r, payment:p, student:s, fee:f, college:this.publicCollege() };
+  },
+
+  /* ---------------- Teacher/Admin (authorization: role === 'teacher') ---------------- */
+  guard(session){ if(!session || session.role !== 'teacher') throw new Error('Forbidden'); },
+  adminView(session){ this.guard(session); const { teachers, ...rest } = this.db; return JSON.parse(JSON.stringify(rest)); },
+  upsertStudent(session, data){
+    this.guard(session);
+    if(!data.name || !data.student_id) throw new Error('Name and Student ID are required');
+    const dup = this.db.students.find(s => s.student_id.toLowerCase() === data.student_id.toLowerCase() && s.id !== data.id);
+    if(dup) throw new Error('Student ID already exists');
+    if(data.id){ const s = this.db.students.find(x => x.id === data.id); Object.assign(s, data); }
+    else { this.db.students.push({ id:uid('S'), active:true, ...data }); }
+    this.save(); this.log(data.id ? 'STUDENT_UPDATED' : 'STUDENT_ADDED', session.name, { student_id:data.student_id });
+  },
+  async setStudentPassword(session, id, pw){ this.guard(session); const s = this.db.students.find(x=>x.id===id); if(!s) throw new Error('Not found'); if(!pw || pw.length<6) throw new Error('Min 6 characters'); s.password_hash = await sha256(pw); this.save(); },
+  toggleStudent(session, id){ this.guard(session); const s = this.db.students.find(x => x.id === id); s.active = !s.active; this.save(); },
+  deleteStudent(session, id){ this.guard(session); if(this.db.payments.some(p => p.student_id === id && p.status === 'PAID')) throw new Error('Student has paid records. Deactivate instead of deleting.'); this.db.students = this.db.students.filter(s => s.id !== id); this.db.fees = this.db.fees.filter(f => f.student_id !== id); this.save(); },
+  upsertFee(session, data){
+    this.guard(session);
+    if(!data.student_id || !data.fee_type || !(Number(data.amount) > 0)) throw new Error('Student, fee type and valid amount are required');
+    data.amount = Number(data.amount);
+    if(data.id){ const f = this.db.fees.find(x => x.id === data.id); if(f.status === 'PAID') throw new Error('Paid fees cannot be edited'); Object.assign(f, data); }
+    else this.db.fees.push({ id:uid('F'), status:'PENDING', created_at:new Date().toISOString(), ...data });
+    this.save(); this.log(data.id ? 'FEE_UPDATED' : 'FEE_CREATED', session.name, { fee_type:data.fee_type, amount:data.amount });
+  },
+  deleteFee(session, id){ this.guard(session); const f = this.db.fees.find(x => x.id === id); if(f.status === 'PAID') throw new Error('Paid fees cannot be deleted'); this.db.fees = this.db.fees.filter(x => x.id !== id); this.db.payments = this.db.payments.filter(p => !(p.fee_id === id && p.status === 'CREATED')); this.save(); },
+  saveCollege(session, data){ this.guard(session); Object.assign(this.db.college_settings, data); this.save(); this.log('COLLEGE_SETTINGS_UPDATED', session.name); },
+  savePaymentSettings(session, data){
+    this.guard(session);
+    if(!/^[\w.\-]{2,}@[a-zA-Z]{2,}$/.test(data.upi_id || '')) throw new Error('Enter a valid UPI ID (e.g. name@bank)');
+    Object.assign(this.db.payment_settings, data); this.save(); this.log('PAYMENT_SETTINGS_UPDATED', session.name);
+  }
+};
+
+/* ------------------------------------------------------------------
+   CLIENT APP STATE + ROUTER
+------------------------------------------------------------------- */
+const App = {
+  session: JSON.parse(sessionStorage.getItem('aki_session') || 'null'),
+  view: sessionStorage.getItem('aki_view') || 'landing',
+  tab: sessionStorage.getItem('aki_tab') || 'home',
+  payOrder: null, pollTimer: null, drawerOpen:false,
+  go(view, tab){ this.view = view; if(tab) this.tab = tab; sessionStorage.setItem('aki_view', view); sessionStorage.setItem('aki_tab', this.tab); this.stopPolling(); this.drawerOpen=false; render(); window.scrollTo({top:0}); },
+  setSession(s){ this.session = s; sessionStorage.setItem('aki_session', JSON.stringify(s)); },
+  logout(){ this.session = null; sessionStorage.removeItem('aki_session'); this.payOrder=null; this.go('landing','home'); toast('Logged out safely.'); },
+  stopPolling(){ if(this.pollTimer){ clearInterval(this.pollTimer); this.pollTimer = null; } }
+};
+
+/* ------------------------------------------------------------------
+   ICONS
+------------------------------------------------------------------- */
+const I = {
+  home:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12l8.954-8.955a1.126 1.126 0 011.591 0L21.75 12M4.5 9.75v10.125c0 .621.504 1.125 1.125 1.125H9.75v-4.875c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21h4.125c.621 0 1.125-.504 1.125-1.125V9.75"/></svg>',
+  pay:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z"/></svg>',
+  receipt:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>',
+  status:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+  pending:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 11-18 0 9 9 0 0118 0zm-9 3.75h.008v.008H12v-.008z"/></svg>',
+  done:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>',
+  users:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z"/></svg>',
+  settings:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M10.343 3.94c.09-.542.56-.94 1.11-.94h1.093c.55 0 1.02.398 1.11.94l.149.894c.07.424.384.764.78.93.398.164.855.142 1.205-.108l.737-.527a1.125 1.125 0 011.45.12l.773.774c.39.389.44 1.002.12 1.45l-.527.737c-.25.35-.272.806-.107 1.204.165.397.505.71.93.78l.893.15c.543.09.94.56.94 1.109v1.094c0 .55-.397 1.02-.94 1.11l-.893.149c-.425.07-.765.383-.93.78-.165.398-.143.854.107 1.204l.527.738c.32.447.269 1.06-.12 1.45l-.774.773a1.125 1.125 0 01-1.449.12l-.738-.527c-.35-.25-.806-.272-1.203-.107-.397.165-.71.505-.781.929l-.149.894c-.09.542-.56.94-1.11.94h-1.094c-.55 0-1.019-.398-1.11-.94l-.148-.894c-.071-.424-.384-.764-.781-.93-.398-.164-.854-.142-1.204.108l-.738.527c-.447.32-1.06.269-1.45-.12l-.773-.774a1.125 1.125 0 01-.12-1.45l.527-.737c.25-.35.273-.806.108-1.204-.165-.397-.505-.71-.93-.78l-.894-.15c-.542-.09-.94-.56-.94-1.109v-1.094c0-.55.398-1.02.94-1.11l.894-.149c.424-.07.765-.383.93-.78.165-.398.143-.854-.107-1.204l-.527-.738a1.125 1.125 0 01.12-1.45l.773-.773a1.125 1.125 0 011.45-.12l.737.527c.35.25.807.272 1.204.107.397-.165.71-.505.78-.929l.15-.894z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>',
+  shield:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z"/></svg>',
+  chart:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 013 19.875v-6.75zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 01-1.125-1.125V4.125z"/></svg>',
+  building:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 21h16.5M4.5 3h15M5.25 3v18m13.5-18v18M9 6.75h1.5m-1.5 3h1.5m-1.5 3h1.5m3-6H15m-1.5 3H15m-1.5 3H15M9 21v-3.375c0-.621.504-1.125 1.125-1.125h3.75c.621 0 1.125.504 1.125 1.125V21"/></svg>',
+  logout:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75"/></svg>',
+  menu:'<svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"/></svg>',
+  back:'<svg fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>',
+  lock:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 10-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 002.25-2.25v-6.75a2.25 2.25 0 00-2.25-2.25H6.75a2.25 2.25 0 00-2.25 2.25v6.75a2.25 2.25 0 002.25 2.25z"/></svg>',
+  print:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M6.72 13.829c-.24.03-.48.062-.72.096m.72-.096a42.415 42.415 0 0110.56 0m-10.56 0L6.34 18m10.94-4.171c.24.03.48.062.72.096m-.72-.096L17.66 18m0 0l.229 2.523a1.125 1.125 0 01-1.12 1.227H7.231c-.662 0-1.18-.568-1.12-1.227L6.34 18m11.318 0h1.091A2.25 2.25 0 0021 15.75V9.456c0-1.081-.768-2.015-1.837-2.175a48.055 48.055 0 00-1.913-.247M6.34 18H5.25A2.25 2.25 0 013 15.75V9.456c0-1.081.768-2.015 1.837-2.175a48.041 48.041 0 011.913-.247m10.5 0a48.536 48.536 0 00-10.5 0m10.5 0V3.375c0-.621-.504-1.125-1.125-1.125h-8.25c-.621 0-1.125.504-1.125 1.125v3.659M18 10.5h.008v.008H18V10.5zm-3 0h.008v.008H15V10.5z"/></svg>',
+  download:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>',
+  qr:'<svg fill="none" viewBox="0 0 24 24" stroke-width="1.8" stroke="currentColor" class="w-5 h-5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 013.75 9.375v-4.5zM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 01-1.125-1.125v-4.5zM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0113.5 9.375v-4.5z"/><path stroke-linecap="round" stroke-linejoin="round" d="M6.75 6.75h.75v.75h-.75v-.75zM6.75 16.5h.75v.75h-.75v-.75zM16.5 6.75h.75v.75h-.75v-.75zM13.5 13.5h.75v.75h-.75v-.75zM13.5 19.5h.75v.75h-.75v-.75zM19.5 13.5h.75v.75h-.75v-.75zM19.5 19.5h.75v.75h-.75v-.75zM16.5 16.5h.75v.75h-.75v-.75z"/></svg>'
+};
+
+const statusBadge = (s) => {
+  const map = { PAID:'badge-paid', PENDING:'badge-pending', CREATED:'badge-created', FAILED:'badge-failed' };
+  const label = s === 'CREATED' ? 'AWAITING GATEWAY' : s;
+  return `<span class="badge badge-dot ${map[s]||'badge-created'}">${esc(label)}</span>`;
+};
+const logo = (college, size='w-11 h-11 text-base') => `<div class="${size} rounded-2xl bg-gradient-to-br from-brand-500 to-brand-800 text-white font-extrabold grid place-items-center shadow-lg shadow-brand-600/30 tracking-tight">${esc(college.logo_text || 'APC')}</div>`;
+
+/* ------------------------------------------------------------------
+   RENDER ROOT
+------------------------------------------------------------------- */
+function render(){
+  const app = $('#app');
+  if(App.view === 'student' && (!App.session || App.session.role !== 'student')) App.view = 'student-login';
+  if(App.view === 'teacher' && (!App.session || App.session.role !== 'teacher')) App.view = 'teacher-login';
+  switch(App.view){
+    case 'landing': app.innerHTML = Landing(); break;
+    case 'student-login': app.innerHTML = LoginPage('student'); break;
+    case 'teacher-login': app.innerHTML = LoginPage('teacher'); break;
+    case 'student': app.innerHTML = StudentPortal(); afterStudentRender(); break;
+    case 'teacher': app.innerHTML = TeacherPortal(); break;
+    default: app.innerHTML = Landing();
+  }
+}
+
+/* ==================================================================
+   LANDING PAGE (public/index.html)
+================================================================== */
+function Landing(){
+  const c = Server.publicCollege();
+  return `
+  <div class="min-h-screen bg-gradient-to-b from-brand-50 via-white to-white">
+    <header class="glass sticky top-0 z-40 border-b border-brand-100">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">${logo(c,'w-10 h-10 text-sm')}<div><div class="font-extrabold text-slate-900 leading-tight">${esc(c.name)}</div><div class="text-[11px] text-brand-700 font-semibold uppercase tracking-wider">${esc(c.tagline)}</div></div></div>
+        <div class="hidden sm:flex items-center gap-2">
+          <button class="btn btn-ghost text-sm" data-action="go" data-view="student-login">Student Login</button>
+          <button class="btn btn-primary text-sm" data-action="go" data-view="teacher-login">Teacher / Admin</button>
+        </div>
+      </div>
+    </header>
+
+    <section class="max-w-6xl mx-auto px-4 sm:px-6 pt-12 sm:pt-20 pb-12 grid lg:grid-cols-2 gap-10 items-center">
+      <div class="slide-up">
+        <span class="badge bg-brand-100 text-brand-800 mb-5">🔒 Secure • Gateway-verified payments</span>
+        <h1 class="text-4xl sm:text-5xl font-extrabold tracking-tight text-slate-900 leading-[1.1]">Pay your college fees <span class="bg-gradient-to-r from-brand-600 to-emerald-500 bg-clip-text text-transparent">safely, from your phone.</span></h1>
+        <p class="mt-5 text-slate-600 text-lg leading-relaxed">${esc(c.name)}'s official online fee payment system. Scan, pay through any UPI app, and receive an instant verified receipt — no queues, no paperwork.</p>
+        <div class="mt-8 flex flex-col sm:flex-row gap-3">
+          <button class="btn btn-primary text-base px-6 py-3.5" data-action="go" data-view="student-login">${I.users} Student Portal</button>
+          <button class="btn btn-outline text-base px-6 py-3.5" data-action="go" data-view="teacher-login">${I.shield} Teacher / Admin Portal</button>
+        </div>
+        <div class="mt-8 grid grid-cols-3 gap-3 max-w-md">
+          ${[['UPI / QR','Any UPI app'],['Verified','Webhook signed'],['Receipts','Print & download']].map(([a,b])=>`<div class="card p-3 text-center"><div class="font-bold text-brand-700 text-sm">${a}</div><div class="text-[11px] text-slate-500">${b}</div></div>`).join('')}
+        </div>
+      </div>
+      <div class="relative slide-up" style="animation-delay:.15s">
+        <div class="absolute -inset-6 bg-gradient-to-tr from-brand-200/60 to-emerald-100/40 rounded-[2.5rem] blur-2xl"></div>
+        <div class="relative card p-6 sm:p-8">
+          <div class="flex items-center justify-between"><div class="font-bold text-slate-800">Payment Flow</div><span class="badge badge-test">Sandbox demo</span></div>
+          <ol class="mt-5 space-y-3 text-sm">
+            ${['Student selects pending fee','Server creates Payment Order','Student pays via QR / UPI app','Gateway verifies transaction','Signed webhook → backend verifies signature','Database updated → status PAID','Receipt generated & downloadable'].map((s,i)=>`<li class="flex items-start gap-3"><span class="w-6 h-6 rounded-full bg-brand-600 text-white text-[11px] font-bold grid place-items-center shrink-0 mt-0.5">${i+1}</span><span class="text-slate-700">${s}</span></li>`).join('')}
+          </ol>
+          <div class="mt-5 rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-800"><b>No fake success:</b> the student interface has no "mark as paid" button. Status changes only after the backend verifies the gateway's signed webhook.</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-4 sm:px-6 pb-10">
+      <div class="card p-5 sm:p-7 grid md:grid-cols-2 gap-6">
+        <div>
+          <div class="font-bold text-slate-900 text-lg">Demo credentials</div>
+          <p class="text-sm text-slate-500 mt-1">For this interactive demo only. In production, students receive credentials from the college office and passwords are hashed with bcrypt/argon2.</p>
+          <div class="mt-4 grid sm:grid-cols-2 gap-3">
+            <div class="rounded-xl bg-brand-50 border border-brand-100 p-4"><div class="text-xs font-bold text-brand-800 uppercase">Student</div><div class="mt-1 text-sm">ID: <span class="mono font-semibold">STU001</span></div><div class="text-sm">Password: <span class="mono font-semibold">student123</span></div></div>
+            <div class="rounded-xl bg-slate-50 border border-slate-200 p-4"><div class="text-xs font-bold text-slate-700 uppercase">Teacher / Admin</div><div class="mt-1 text-sm">User: <span class="mono font-semibold">admin</span></div><div class="text-sm">Password: <span class="mono font-semibold">admin123</span></div></div>
+          </div>
+        </div>
+        <div>
+          <div class="font-bold text-slate-900 text-lg">Two genuinely separate portals</div>
+          <ul class="mt-3 text-sm text-slate-600 space-y-2">
+            <li class="flex gap-2"><span class="text-brand-600">✔</span><span><b>Student</b> — view own profile & fees, pay, track status, download receipts. Cannot edit anything or see payment configuration.</span></li>
+            <li class="flex gap-2"><span class="text-brand-600">✔</span><span><b>Teacher/Admin</b> — manage college, students, fees, payment destination, gateway keys, reports and receipts.</span></li>
+            <li class="flex gap-2"><span class="text-brand-600">✔</span><span>Role-based authorization on every request; secrets live only in server <code class="mono">.env</code>.</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="max-w-6xl mx-auto px-4 sm:px-6 pb-20">
+      <details class="card p-5 sm:p-7 group">
+        <summary class="cursor-pointer list-none flex items-center justify-between"><div><div class="font-bold text-slate-900 text-lg">Developer notes — project structure, database & environment</div><div class="text-sm text-slate-500">Setup instructions for the full Node.js + PostgreSQL implementation</div></div><span class="text-brand-700 font-bold group-open:rotate-180 transition">⌄</span></summary>
+        <div class="mt-6 grid lg:grid-cols-3 gap-5">
+          <div class="rounded-2xl bg-slate-900 p-4 overflow-x-auto"><div class="text-[11px] font-bold text-brand-300 uppercase mb-2">Project structure</div><div class="tree">/project
+├── server.js
+├── package.json
+├── .env.example
+├── public/
+│   ├── index.html
+│   ├── student.html
+│   ├── teacher.html
+│   ├── login.html
+│   ├── css/  js/  assets/
+├── routes/
+│   ├── auth.js
+│   ├── students.js
+│   ├── fees.js
+│   ├── payments.js
+│   └── receipts.js
+└── database/
+    ├── schema.sql
+    └── README.md</div></div>
+          <div class="rounded-2xl bg-slate-900 p-4 overflow-x-auto"><div class="text-[11px] font-bold text-brand-300 uppercase mb-2">.env.example</div><div class="tree">DATABASE_URL=postgres://user:pass@host:5432/akipc
+PAYMENT_GATEWAY_KEY_ID=          # from authorised college account
+PAYMENT_GATEWAY_KEY_SECRET=      # server only, NEVER in frontend
+PAYMENT_WEBHOOK_SECRET=          # verify webhook HMAC
+TEACHER_ADMIN_SECRET=            # bootstrap first admin
+SESSION_SECRET=
+PAYMENT_MODE=sandbox             # sandbox | live
+PORT=3000</div></div>
+          <div class="rounded-2xl bg-slate-900 p-4 overflow-x-auto"><div class="text-[11px] font-bold text-brand-300 uppercase mb-2">database/schema.sql (excerpt)</div><div class="tree">CREATE TABLE payments (
+  id            UUID PRIMARY KEY,
+  student_id    UUID REFERENCES students(id),
+  fee_id        UUID REFERENCES fees(id),
+  amount        NUMERIC(10,2) NOT NULL,
+  order_id      TEXT UNIQUE NOT NULL,
+  transaction_id TEXT UNIQUE,
+  status        TEXT CHECK (status IN
+     ('CREATED','PAID','FAILED')),
+  payment_method TEXT,
+  created_at    TIMESTAMPTZ DEFAULT now(),
+  paid_at       TIMESTAMPTZ
+);
+-- also: users, students, teachers, fees,
+-- receipts, college_settings, payment_settings</div></div>
+        </div>
+        <div class="mt-5 grid md:grid-cols-2 gap-5 text-sm text-slate-600">
+          <div><div class="font-bold text-slate-800 mb-2">Setup</div><ol class="list-decimal ml-5 space-y-1"><li><code class="mono">npm install</code> (express, pg, bcrypt, helmet, express-rate-limit, express-session, zod)</li><li><code class="mono">cp .env.example .env</code> and fill values</li><li><code class="mono">psql $DATABASE_URL -f database/schema.sql</code></li><li><code class="mono">npm run seed</code> → creates demo college, admin, STU001</li><li><code class="mono">npm start</code> → http://localhost:3000</li><li>Register <code class="mono">/api/payments/webhook</code> URL in the gateway dashboard with the same webhook secret.</li></ol></div>
+          <div><div class="font-bold text-slate-800 mb-2">Security checklist implemented</div><ul class="space-y-1">${['Password hashing (bcrypt cost 12)','Role-based authorization middleware (student / teacher)','Server-side validation (zod) & parameterised SQL','Rate limiting on login & webhook routes','HMAC-SHA256 webhook signature verification','Idempotent webhook handling (unique transaction_id)','Amount cross-check between order and gateway event','No secrets or UPI destination in frontend bundles','Receipts only for verified PAID records','Audit log for all admin changes'].map(x=>`<li class="flex gap-2"><span class="text-brand-600">✔</span>${x}</li>`).join('')}</ul></div>
+        </div>
+      </details>
+    </section>
+
+    <footer class="border-t border-slate-200 py-8 text-center text-xs text-slate-500 px-4">© ${new Date().getFullYear()} ${esc(c.name)} · ${esc(c.address)} · ${esc(c.email)}<br><span class="text-slate-400">Original design. Not affiliated with any third-party fee portal brand.</span></footer>
+    <div class="sm:hidden fixed bottom-0 inset-x-0 p-3 glass border-t border-brand-100 flex gap-2 bottom-nav z-40">
+      <button class="btn btn-outline flex-1 text-sm" data-action="go" data-view="student-login">Student</button>
+      <button class="btn btn-primary flex-1 text-sm" data-action="go" data-view="teacher-login">Teacher / Admin</button>
+    </div>
+  </div>`;
+}
+
+/* ==================================================================
+   LOGIN PAGE (public/login.html) – separate for student vs teacher
+================================================================== */
+function LoginPage(role){
+  const c = Server.publicCollege();
+  const isT = role === 'teacher';
+  return `
+  <div class="min-h-screen flex flex-col ${isT ? 'bg-gradient-to-br from-slate-900 via-brand-900 to-slate-900' : 'bg-gradient-to-br from-brand-50 via-white to-emerald-50'}">
+    <div class="p-4"><button class="btn btn-ghost text-sm ${isT?'text-slate-200 hover:bg-white/10':''}" data-action="go" data-view="landing">${I.back} Back</button></div>
+    <div class="flex-1 flex items-center justify-center px-4 pb-10">
+      <div class="w-full max-w-md card p-7 sm:p-9 slide-up ${isT?'border-brand-800/40':''}">
+        <div class="flex flex-col items-center text-center">
+          ${logo(c,'w-14 h-14 text-lg')}
+          <h2 class="mt-4 text-xl font-extrabold text-slate-900">${esc(c.name)}</h2>
+          <p class="text-sm text-slate-500 mt-1">${isT ? 'Teacher / Admin Portal — authorised staff only' : 'Student Portal — sign in with your Student ID'}</p>
+          ${isT ? `<span class="badge bg-slate-900 text-white mt-3">${I.lock} Restricted access</span>` : ''}
+        </div>
+        <form id="login-form" class="mt-7 space-y-4" data-role="${role}">
+          <div><label class="label">${isT ? 'Username' : 'Student ID / Roll Number'}</label><input class="input" name="user" required autocomplete="username" placeholder="${isT ? 'admin' : 'e.g. STU001'}" value="${isT ? 'admin' : 'STU001'}"></div>
+          <div><label class="label">Password</label><div class="relative"><input class="input pr-12" name="pass" type="password" required autocomplete="current-password" placeholder="••••••••" value="${isT ? 'admin123' : 'student123'}"><button type="button" class="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-brand-700" data-action="toggle-pass">Show</button></div></div>
+          <div id="login-err" class="hidden text-sm text-red-600 bg-red-50 border border-red-100 rounded-xl p-3"></div>
+          <button class="btn btn-primary w-full py-3.5 text-base" id="login-btn" type="submit">Sign in</button>
+        </form>
+        <p class="mt-5 text-center text-xs text-slate-500">${isT ? 'Students cannot access this portal. All logins are logged.' : `Forgot password? Contact the college office: ${esc(c.email)}`}</p>
+        <div class="mt-4 text-center"><button class="text-xs font-semibold text-brand-700 hover:underline" data-action="go" data-view="${isT?'student-login':'teacher-login'}">${isT ? 'Go to Student Portal →' : 'Teacher / Admin login →'}</button></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ==================================================================
+   STUDENT PORTAL (public/student.html)
+================================================================== */
+function StudentPortal(){
+  const data = Server.studentView(App.session.id);
+  const { profile, college } = data;
+  const tabs = [['home','Home',I.home],['pay','Pay',I.pay],['status','Status',I.status],['receipts','Receipts',I.receipt]];
+  let body = '';
+  switch(App.tab){
+    case 'home': body = StudentHome(data); break;
+    case 'pay': body = StudentPay(data); break;
+    case 'pending': body = StudentPending(data); break;
+    case 'completed': body = StudentCompleted(data); break;
+    case 'status': body = StudentStatus(data); break;
+    case 'receipts': body = StudentReceipts(data); break;
+    case 'checkout': body = StudentCheckout(data); break;
+    default: body = StudentHome(data);
+  }
+  return `
+  <div class="min-h-screen bg-[#f4f7f6] pb-24 md:pb-10">
+    <header class="bg-gradient-to-r from-brand-700 via-brand-600 to-emerald-600 text-white">
+      <div class="max-w-5xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
+        <div class="flex items-center gap-3">${logo(college,'w-10 h-10 text-sm')}<div><div class="font-bold leading-tight">${esc(college.name)}</div><div class="text-[11px] text-brand-100 font-medium">Student Portal</div></div></div>
+        <div class="flex items-center gap-1 sm:gap-2">
+          <nav class="hidden md:flex items-center gap-1 mr-2">${tabs.map(([k,l])=>`<button class="px-3 py-2 rounded-lg text-sm font-semibold ${App.tab===k||(k==='pay'&&['pending','checkout'].includes(App.tab))?'bg-white/20':'hover:bg-white/10'}" data-action="tab" data-tab="${k}">${l}</button>`).join('')}</nav>
+          <button class="btn text-sm bg-white/15 hover:bg-white/25 text-white py-2" data-action="logout">${I.logout}<span class="hidden sm:inline">Logout</span></button>
+        </div>
+      </div>
+    </header>
+    <main class="max-w-5xl mx-auto px-4 sm:px-6 py-6 fade-in" key="${App.tab}">${body}</main>
+    <nav class="md:hidden fixed bottom-0 inset-x-0 glass border-t border-slate-200 flex bottom-nav z-40">
+      ${tabs.map(([k,l,ic])=>`<button class="tab-btn ${App.tab===k||(k==='pay'&&['pending','checkout'].includes(App.tab))?'active':''}" data-action="tab" data-tab="${k}">${ic}<span>${l}</span></button>`).join('')}
+    </nav>
+  </div>`;
+}
+
+function studentSummary(data){
+  const pending = data.fees.filter(f => f.status === 'PENDING');
+  const paid = data.payments.filter(p => p.status === 'PAID');
+  return { pending, paid, pendingTotal: pending.reduce((a,f)=>a+Number(f.amount),0), paidTotal: paid.reduce((a,p)=>a+Number(p.amount),0) };
+}
+
+function StudentHome(data){
+  const { profile } = data; const s = studentSummary(data);
+  const initials = profile.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  return `
+  <div class="stagger space-y-5">
+    <section class="card p-5 sm:p-6 relative overflow-hidden">
+      <div class="absolute -right-10 -top-10 w-40 h-40 rounded-full bg-brand-100/60"></div>
+      <div class="relative flex items-start gap-4">
+        <div class="w-16 h-16 rounded-2xl bg-gradient-to-br from-brand-500 to-brand-800 text-white font-bold text-xl grid place-items-center shadow-lg shadow-brand-600/30">${esc(initials)}</div>
+        <div class="flex-1 min-w-0">
+          <div class="text-xs font-semibold text-brand-700 uppercase tracking-wide">Student Profile</div>
+          <h2 class="text-xl sm:text-2xl font-extrabold text-slate-900 truncate">${esc(profile.name)}</h2>
+          <div class="mt-3 grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
+            ${[['Student ID',profile.student_id],['Class',profile.class],['Stream',profile.stream],['Academic Year',profile.academic_year]].map(([k,v])=>`<div><div class="text-[11px] text-slate-500 font-semibold uppercase">${k}</div><div class="font-semibold text-slate-800">${esc(v||'—')}</div></div>`).join('')}
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid grid-cols-2 gap-3 sm:gap-4">
+      <div class="card p-4 sm:p-5 border-l-4 border-l-amber-400"><div class="text-xs font-semibold text-slate-500 uppercase">Pending Fees</div><div class="mt-1 text-2xl sm:text-3xl font-extrabold text-slate-900">${inr(s.pendingTotal)}</div><div class="text-xs text-slate-500 mt-1">${s.pending.length} item(s)</div></div>
+      <div class="card p-4 sm:p-5 border-l-4 border-l-brand-500"><div class="text-xs font-semibold text-slate-500 uppercase">Total Paid</div><div class="mt-1 text-2xl sm:text-3xl font-extrabold text-brand-700">${inr(s.paidTotal)}</div><div class="text-xs text-slate-500 mt-1">${s.paid.length} verified payment(s)</div></div>
+    </section>
+
+    ${s.pending.length ? `<section class="card p-4 sm:p-5 bg-gradient-to-r from-amber-50 to-white border-amber-200">
+      <div class="flex items-center justify-between gap-3 flex-wrap">
+        <div><div class="text-xs font-bold text-amber-700 uppercase">Action required</div><div class="font-bold text-slate-900">${esc(s.pending[0].fee_type)} — ${inr(s.pending[0].amount)}</div><div class="text-xs text-slate-500">Due ${fmtDate(s.pending[0].due_date)} · ${statusBadge('PENDING')}</div></div>
+        <button class="btn btn-primary" data-action="checkout" data-fee="${s.pending[0].id}">${I.qr} Pay Now</button>
+      </div></section>` : `<section class="card p-4 sm:p-5 bg-gradient-to-r from-brand-50 to-white"><div class="font-bold text-brand-800">🎉 All fees are cleared!</div><div class="text-sm text-slate-600">No pending payments for ${esc(profile.academic_year)}.</div></section>`}
+
+    <section>
+      <div class="text-sm font-bold text-slate-700 mb-3">Quick actions</div>
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 stagger">
+        ${[['pay','Make Payment',I.pay,'from-brand-500 to-brand-700'],['receipts','Fees Receipt',I.receipt,'from-emerald-500 to-emerald-700'],['status','My Payment Status',I.status,'from-sky-500 to-sky-700'],['pending','Pending Payments',I.pending,'from-amber-500 to-orange-600'],['completed','Completed Payments',I.done,'from-violet-500 to-violet-700']].map(([k,l,ic,g])=>`<button class="card p-4 text-left hover:-translate-y-0.5 hover:shadow-lg transition" data-action="tab" data-tab="${k}"><div class="w-10 h-10 rounded-xl bg-gradient-to-br ${g} text-white grid place-items-center">${ic}</div><div class="mt-3 font-bold text-slate-800 text-sm">${l}</div></button>`).join('')}
+      </div>
+    </section>
+  </div>`;
+}
+
+function feeCard(f, data, withPay=true){
+  const pay = data.payments.find(p => p.fee_id === f.id && p.status === 'PAID');
+  return `<div class="card p-4 sm:p-5 flex items-center gap-4 flex-wrap">
+    <div class="w-12 h-12 rounded-xl ${f.status==='PAID'?'bg-brand-100 text-brand-700':'bg-amber-100 text-amber-700'} grid place-items-center shrink-0">${f.status==='PAID'?I.done:I.pending}</div>
+    <div class="flex-1 min-w-[140px]"><div class="font-bold text-slate-900">${esc(f.fee_type)}</div><div class="text-xs text-slate-500">${esc(f.description||'')}${f.due_date?` · Due ${fmtDate(f.due_date)}`:''}</div><div class="mt-1.5">${statusBadge(f.status)}</div></div>
+    <div class="text-right"><div class="text-xl font-extrabold text-slate-900">${inr(f.amount)}</div>
+      ${f.status==='PENDING'&&withPay?`<button class="btn btn-primary text-sm mt-2 py-2" data-action="checkout" data-fee="${f.id}">Pay Now</button>`:''}
+      ${pay?`<button class="btn btn-outline text-sm mt-2 py-2" data-action="receipt" data-payment="${pay.id}">View Receipt</button>`:''}
+    </div></div>`;
+}
+const SectionHead = (title, sub, back=true) => `<div class="flex items-center gap-3 mb-5">${back?`<button class="btn btn-ghost p-2" data-action="tab" data-tab="home">${I.back}</button>`:''}<div><h2 class="text-xl font-extrabold text-slate-900">${title}</h2>${sub?`<div class="text-sm text-slate-500">${sub}</div>`:''}</div></div>`;
+const Empty = (msg) => `<div class="card p-10 text-center text-slate-500"><div class="text-4xl mb-2">🗂️</div>${msg}</div>`;
+
+function StudentPay(data){ const s = studentSummary(data);
+  return `${SectionHead('Make Payment','Select a pending fee to pay securely')}<div class="stagger space-y-3">${s.pending.length ? s.pending.map(f=>feeCard(f,data)).join('') : Empty('No pending fees to pay.')}</div>
+  <div class="mt-6 card p-4 text-xs text-slate-500 flex gap-3"><span class="text-brand-600 shrink-0">${I.shield}</span><span>Payments are processed by an authorised payment gateway. Your payment status updates automatically after the gateway confirms the transaction — you never need to "mark" anything yourself.</span></div>`;
+}
+function StudentPending(data){ const s = studentSummary(data);
+  return `${SectionHead('Pending Payments',`${s.pending.length} unpaid fee(s) · Total ${inr(s.pendingTotal)}`)}<div class="stagger space-y-3">${s.pending.length ? s.pending.map(f=>feeCard(f,data)).join('') : Empty('Nothing pending. You are all set!')}</div>`;
+}
+function StudentCompleted(data){ const paid = data.payments.filter(p=>p.status==='PAID').sort((a,b)=>new Date(b.paid_at)-new Date(a.paid_at));
+  return `${SectionHead('Completed Payments',`${paid.length} verified payment(s)`)}<div class="stagger space-y-3">${paid.length ? paid.map(p=>{ const f = data.fees.find(x=>x.id===p.fee_id)||{};
+    return `<div class="card p-4 sm:p-5"><div class="flex items-start justify-between gap-3 flex-wrap"><div><div class="text-2xl font-extrabold text-slate-900">${inr(p.amount)}</div><div class="font-semibold text-slate-700">${esc(f.fee_type||'Fee')}</div><div class="text-xs text-slate-500 mt-1">${fmtDate(p.paid_at)} · ${esc(p.payment_method||'')}</div></div><div class="flex flex-col items-end gap-2">${statusBadge(p.status)}${p.mode==='sandbox'?'<span class="badge badge-test">TEST MODE</span>':''}</div></div>
+      <div class="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between gap-3 flex-wrap"><div class="text-xs text-slate-500">Txn ID: <span class="mono font-semibold text-slate-700">${esc(p.transaction_id)}</span></div><button class="btn btn-primary text-sm py-2" data-action="receipt" data-payment="${p.id}">${I.receipt} View Receipt</button></div></div>`; }).join('') : Empty('No completed payments yet.')}</div>`;
+}
+function StudentStatus(data){ const rows = data.fees.map(f=>{ const p = data.payments.filter(x=>x.fee_id===f.id).sort((a,b)=>new Date(b.created_at)-new Date(a.created_at))[0]; return {f,p}; });
+  return `${SectionHead('My Payment Status','Live status of all your fees')}<div class="card overflow-hidden"><div class="table-wrap"><table class="tbl"><thead><tr><th>Fee Type</th><th>Amount</th><th>Due Date</th><th>Status</th><th>Order ID</th><th>Transaction ID</th><th></th></tr></thead><tbody>
+  ${rows.length ? rows.map(({f,p})=>`<tr><td class="font-semibold">${esc(f.fee_type)}</td><td class="font-bold">${inr(f.amount)}</td><td>${fmtDate(f.due_date)}</td><td>${statusBadge(f.status==='PAID'?'PAID':(p?.status==='CREATED'?'CREATED':'PENDING'))}</td><td class="mono text-xs">${esc(p?.order_id||'—')}</td><td class="mono text-xs">${esc(p?.transaction_id||'—')}</td><td class="text-right">${f.status==='PENDING'?`<button class="btn btn-primary text-xs py-1.5 px-3" data-action="checkout" data-fee="${f.id}">Pay</button>`:(p?`<button class="btn btn-outline text-xs py-1.5 px-3" data-action="receipt" data-payment="${p.id}">Receipt</button>`:'')}</td></tr>`).join('') : `<tr><td colspan="7" class="text-center text-slate-500 py-8">No fees assigned yet.</td></tr>`}
+  </tbody></table></div></div>`;
+}
+function StudentReceipts(data){ const rec = data.receipts.slice().sort((a,b)=>new Date(b.generated_at)-new Date(a.generated_at));
+  return `${SectionHead('Fees Receipts','Receipts are issued only for gateway-verified payments')}<div class="stagger space-y-3">${rec.length ? rec.map(r=>{ const p = data.payments.find(x=>x.id===r.payment_id); const f = data.fees.find(x=>x.id===p.fee_id)||{};
+    return `<div class="card p-4 sm:p-5 flex items-center gap-4 flex-wrap"><div class="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-700 grid place-items-center">${I.receipt}</div><div class="flex-1 min-w-[150px]"><div class="font-bold text-slate-900">Receipt ${esc(r.receipt_no)}</div><div class="text-xs text-slate-500">${esc(f.fee_type)} · ${fmtDate(p.paid_at)}</div></div><div class="text-right"><div class="font-extrabold text-slate-900">${inr(p.amount)}</div><button class="btn btn-outline text-sm py-2 mt-1" data-action="receipt" data-payment="${p.id}">Open</button></div></div>`; }).join('') : Empty('No receipts yet. Receipts appear here after a verified payment.')}</div>`;
+}
+
+/* ---------------- STUDENT PAYMENT SCREEN (checkout) ---------------- */
+function StudentCheckout(data){
+  const o = App.payOrder;
+  if(!o) return `${SectionHead('Make Payment')}${Empty('No active order. Go back and choose a fee.')}`;
+  return `
+  <div class="max-w-lg mx-auto">
+    <div class="flex items-center gap-3 mb-5"><button class="btn btn-ghost p-2" data-action="tab" data-tab="pay">${I.back}</button><div><h2 class="text-xl font-extrabold text-slate-900">Secure Payment</h2><div class="text-sm text-slate-500">Scan the QR or open your UPI app</div></div></div>
+    <div class="card p-6 sm:p-8 text-center relative overflow-hidden slide-up">
+      ${o.mode==='sandbox'?`<div class="absolute top-3 right-3"><span class="badge badge-test">TEST / SANDBOX</span></div>`:''}
+      <div class="text-xs font-semibold text-slate-500 uppercase">${esc(o.fee_type)}</div>
+      <div class="text-4xl font-extrabold text-slate-900 mt-1">${inr(o.amount)}</div>
+      <div class="text-xs text-slate-500 mt-1">Order ID <span class="mono font-semibold text-slate-700">${esc(o.order_id)}</span></div>
+      <div class="mt-6 inline-block p-4 rounded-2xl bg-white border-2 border-brand-100 shadow-inner"><div id="qrcode" style="width:${o.qr_size||220}px;height:${o.qr_size||220}px" class="grid place-items-center"><div class="skeleton w-full h-full"></div></div></div>
+      <div class="mt-3 text-sm text-slate-600">Scan with <b>Google Pay, PhonePe, Paytm, BHIM</b> or any UPI app</div>
+      <a href="${esc(o.intent_url)}" class="btn btn-primary w-full mt-5 py-3.5 text-base" id="upi-btn">${I.pay} Pay Now / Open UPI App</a>
+      <div class="mt-5 rounded-xl bg-brand-50 border border-brand-100 p-3 flex items-center gap-3 text-left">
+        <div class="pulse-ring w-3 h-3 rounded-full bg-brand-500 shrink-0 ml-1"></div>
+        <div class="text-sm text-brand-900"><b>Waiting for gateway confirmation…</b><div class="text-xs text-brand-800/80 mt-0.5" id="poll-note">This page updates automatically once the payment gateway verifies your transaction. Do not refresh or pay twice.</div></div>
+        <div class="spinner ml-auto shrink-0"></div>
+      </div>
+      <div class="mt-4 text-[11px] text-slate-500 leading-relaxed">Payments are verified by the authorised gateway and the college server. A receipt is generated only after verification. Payee details are managed securely by the college and are not displayed here.</div>
+    </div>
+  </div>`;
+}
+
+function afterStudentRender(){
+  if(App.tab === 'checkout' && App.payOrder){
+    const el = $('#qrcode');
+    if(el){ el.innerHTML = ''; try { new QRCode(el, { text: App.payOrder.qr_payload, width: App.payOrder.qr_size||220, height: App.payOrder.qr_size||220, colorDark:'#0f766e', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M }); } catch(e){ el.innerHTML = '<div class="text-xs text-slate-500">QR unavailable. Use the button below.</div>'; } }
+    // Poll the server for the verified status (webhook-driven). Frontend never sets PAID itself.
+    App.stopPolling();
+    App.pollTimer = setInterval(()=>{
+      try{
+        const st = Server.orderStatus(App.session.id, App.payOrder.order_id);
+        if(st.status === 'PAID'){ App.stopPolling(); toast('Payment verified by gateway. Receipt generated.', 'success'); const pid = st.payment_id; App.payOrder = null; App.go('student','completed'); openReceipt(pid); }
+      }catch(e){ App.stopPolling(); }
+    }, 2500);
+  }
+}
+
+/* ---------------- RECEIPT MODAL ---------------- */
+function openReceipt(paymentId){
+  const r = Server.db.receipts.find(x => x.payment_id === paymentId);
+  if(!r){ toast('Receipt not available until payment is verified.', 'warn'); return; }
+  let v; try { v = Server.receiptView(r.id, App.session); } catch(e){ toast(e.message,'error'); return; }
+  const { receipt, payment:p, student:s, fee:f, college:c } = v;
+  const isTest = p.mode === 'sandbox';
+  $('#modal-root').innerHTML = `
+  <div class="fixed inset-0 z-[80] modal-bg bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" data-action="close-modal-bg">
+    <div class="modal-box bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[95vh] overflow-y-auto" data-stop>
+      <div id="receipt-print" class="p-6 sm:p-8 relative">
+        ${isTest?`<div class="watermark"><span>TEST MODE</span></div>`:''}
+        <div class="flex items-start justify-between gap-3">
+          <div class="flex items-center gap-3">${logo(c,'w-12 h-12 text-sm')}<div><div class="font-extrabold text-slate-900 leading-tight">${esc(c.name)}</div><div class="text-[11px] text-slate-500">${esc(c.address)}</div><div class="text-[11px] text-slate-500">${esc(c.phone)} · ${esc(c.email)}</div></div></div>
+          <button class="no-print btn btn-ghost p-1.5" data-action="close-modal">✕</button>
+        </div>
+        <div class="mt-5 flex items-center justify-between border-y border-dashed border-slate-300 py-3"><div><div class="text-xs font-bold text-brand-700 uppercase tracking-widest">Online Payment Receipt</div><div class="text-sm font-semibold text-slate-800">Receipt No: <span class="mono">${esc(receipt.receipt_no)}</span></div></div>${statusBadge(p.status)}</div>
+        <div class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
+          ${[['College Name',c.name],['Student Name',s.name],['Student ID',s.student_id],['Class',`${s.class}${s.stream?' '+s.stream:''}`],['Academic Year',s.academic_year],['Fee Type',f?.fee_type||'—'],['Payment Method',p.payment_method||'—'],['Transaction Date',fmtDateTime(p.paid_at)]].map(([k,v])=>`<div><div class="text-[10px] font-bold text-slate-500 uppercase">${k}</div><div class="font-semibold text-slate-800 break-words">${esc(v)}</div></div>`).join('')}
+          <div class="col-span-2"><div class="text-[10px] font-bold text-slate-500 uppercase">Order ID</div><div class="mono text-xs font-semibold text-slate-800 break-all">${esc(p.order_id)}</div></div>
+          <div class="col-span-2"><div class="text-[10px] font-bold text-slate-500 uppercase">Transaction ID (Gateway)</div><div class="mono text-xs font-semibold text-slate-800 break-all">${esc(p.transaction_id)}</div></div>
+        </div>
+        <div class="mt-5 rounded-2xl bg-brand-50 border border-brand-100 p-4 flex items-center justify-between"><div><div class="text-xs font-bold text-brand-800 uppercase">Payment Amount</div><div class="text-[11px] text-brand-700">Payment Status: <b>${esc(p.status)}</b>${isTest?' (sandbox/test transaction)':''}</div></div><div class="text-3xl font-extrabold text-brand-800">${inr(p.amount)}</div></div>
+        <div class="mt-4 text-[10px] text-slate-400 leading-relaxed">This is a system-generated receipt issued after payment verification by the authorised payment gateway. Generated on ${fmtDateTime(receipt.generated_at)}. ${isTest?'TEST MODE: this record was produced in the gateway sandbox and does not represent real money movement.':''}</div>
+      </div>
+      <div class="no-print p-4 border-t border-slate-100 flex gap-2 bottom-nav"><button class="btn btn-outline flex-1" data-action="print">${I.print} Print Receipt</button><button class="btn btn-primary flex-1" data-action="download-receipt" data-receipt="${receipt.id}">${I.download} Download / Save</button></div>
+    </div>
+  </div>`;
+}
+function downloadReceipt(receiptId){
+  const html = $('#receipt-print').outerHTML;
+  const doc = `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Receipt</title><script src="https://cdn.tailwindcss.com"><\/script><style>body{font-family:Inter,system-ui,sans-serif;padding:24px;max-width:640px;margin:auto}.badge{display:inline-flex;font-size:.72rem;font-weight:700;padding:.28rem .7rem;border-radius:999px}.badge-paid{background:#dcfce7;color:#15803d}.badge-test{background:#ede9fe;color:#6d28d9}.no-print{display:none}.mono{font-family:monospace}.watermark{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}.watermark span{font-size:4rem;font-weight:800;color:rgba(109,40,217,.07);transform:rotate(-24deg)}</style></head><body>${html}</body></html>`;
+  const r = Server.db.receipts.find(x=>x.id===receiptId);
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([doc],{type:'text/html'})); a.download = `Receipt-${(r?.receipt_no||'receipt').replace(/\//g,'-')}.html`; a.click(); URL.revokeObjectURL(a.href);
+  toast('Receipt saved. Use Print → Save as PDF for a PDF copy.', 'success');
+}
+
+/* ==================================================================
+   TEACHER / ADMIN PORTAL (public/teacher.html)
+================================================================== */
+const TEACHER_TABS = [['dashboard','Dashboard',I.home],['students','Students',I.users],['fees','Fees',I.pay],['pending','Pending Payments',I.pending],['completed','Completed Payments',I.done],['receipts','Receipts',I.receipt],['reports','Reports',I.chart],['payment','Payment Settings',I.shield],['college','College Settings',I.building]];
+
+function TeacherPortal(){
+  const db = Server.adminView(App.session);
+  const c = db.college_settings;
+  const validTabs = TEACHER_TABS.map(t=>t[0]);
+  if(!validTabs.includes(App.tab)) App.tab = 'dashboard';
+  const tabLabel = TEACHER_TABS.find(t=>t[0]===App.tab)[1];
+  const content = { dashboard:TDashboard, students:TStudents, fees:TFees, pending:TPending, completed:TCompleted, receipts:TReceipts, reports:TReports, payment:TPaymentSettings, college:TCollege }[App.tab](db);
+  const sidebar = `
+    <div class="p-5 flex items-center gap-3">${logo(c,'w-10 h-10 text-sm')}<div class="min-w-0"><div class="font-bold text-white leading-tight truncate">${esc(c.name)}</div><div class="text-[11px] text-brand-200 font-medium">Teacher / Admin</div></div></div>
+    <nav class="px-3 space-y-1 flex-1 overflow-y-auto">${TEACHER_TABS.map(([k,l,ic])=>`<div class="nav-item ${App.tab===k?'active':''}" data-action="tab" data-tab="${k}">${ic}<span class="text-sm">${l}</span></div>`).join('')}</nav>
+    <div class="p-3 border-t border-white/10"><div class="px-3 py-2 text-xs text-slate-400">Signed in as <b class="text-slate-200">${esc(App.session.name)}</b></div><div class="nav-item text-red-300 hover:text-red-200" data-action="logout">${I.logout}<span class="text-sm">Logout</span></div></div>`;
+  return `
+  <div class="min-h-screen flex bg-[#f4f7f6]">
+    <aside class="hidden lg:flex w-64 shrink-0 flex-col bg-gradient-to-b from-slate-900 via-brand-900 to-slate-900 sticky top-0 h-screen">${sidebar}</aside>
+    ${App.drawerOpen?`<div class="lg:hidden fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm modal-bg" data-action="close-drawer"><aside class="w-72 max-w-[85vw] h-full flex flex-col bg-gradient-to-b from-slate-900 via-brand-900 to-slate-900 shadow-2xl" data-stop>${sidebar}</aside></div>`:''}
+    <div class="flex-1 min-w-0 flex flex-col">
+      <header class="glass sticky top-0 z-40 border-b border-slate-200 h-16 flex items-center px-4 sm:px-6 gap-3">
+        <button class="lg:hidden btn btn-ghost p-2" data-action="open-drawer">${I.menu}</button>
+        <div class="flex-1 min-w-0"><div class="font-extrabold text-slate-900 truncate">${tabLabel}</div><div class="text-[11px] text-slate-500 hidden sm:block">${esc(c.name)} · Admin console</div></div>
+        <span class="badge ${db.payment_settings.gateway_mode==='live'?'badge-paid':'badge-test'}">${db.payment_settings.gateway_mode==='live'?'LIVE':'SANDBOX'} gateway</span>
+        <button class="btn btn-ghost p-2 hidden sm:inline-flex" title="Logout" data-action="logout">${I.logout}</button>
+      </header>
+      <main class="p-4 sm:p-6 max-w-7xl w-full mx-auto fade-in">${content}</main>
+    </div>
+  </div>`;
+}
+
+function TDashboard(db){
+  const paid = db.payments.filter(p=>p.status==='PAID'); const pending = db.fees.filter(f=>f.status==='PENDING');
+  const collected = paid.reduce((a,p)=>a+Number(p.amount),0), due = pending.reduce((a,f)=>a+Number(f.amount),0);
+  const recent = db.payments.slice().sort((a,b)=>new Date(b.paid_at||b.created_at)-new Date(a.paid_at||a.created_at)).slice(0,6);
+  return `<div class="stagger space-y-6">
+    <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      ${[['Active Students',db.students.filter(s=>s.active).length,'from-brand-500 to-brand-700',I.users],['Collected',inr(collected),'from-emerald-500 to-emerald-700',I.done],['Pending Dues',inr(due),'from-amber-500 to-orange-600',I.pending],['Receipts Issued',db.receipts.length,'from-violet-500 to-violet-700',I.receipt]].map(([l,v,g,ic])=>`<div class="card p-4 sm:p-5"><div class="w-9 h-9 rounded-xl bg-gradient-to-br ${g} text-white grid place-items-center">${ic}</div><div class="mt-3 text-xs font-semibold text-slate-500 uppercase">${l}</div><div class="text-xl sm:text-2xl font-extrabold text-slate-900 truncate">${v}</div></div>`).join('')}
+    </div>
+    <div class="grid lg:grid-cols-3 gap-5">
+      <div class="card lg:col-span-2 overflow-hidden"><div class="p-4 sm:p-5 flex items-center justify-between"><div class="font-bold text-slate-900">Recent Payment Activity</div><button class="text-xs font-semibold text-brand-700" data-action="tab" data-tab="completed">View all →</button></div>
+        <div class="table-wrap"><table class="tbl"><thead><tr><th>Student</th><th>Fee</th><th>Amount</th><th>Status</th><th>Order ID</th><th>Date</th></tr></thead><tbody>${recent.length?recent.map(p=>{const s=db.students.find(x=>x.id===p.student_id)||{};const f=db.fees.find(x=>x.id===p.fee_id)||{};return `<tr><td class="font-semibold">${esc(s.name||'—')}<div class="text-[11px] text-slate-500">${esc(s.student_id||'')}</div></td><td>${esc(f.fee_type||'—')}</td><td class="font-bold">${inr(p.amount)}</td><td>${statusBadge(p.status)}</td><td class="mono text-xs">${esc(p.order_id)}</td><td class="text-xs">${fmtDateTime(p.paid_at||p.created_at)}</td></tr>`}).join(''):'<tr><td colspan="6" class="text-center py-8 text-slate-500">No activity yet.</td></tr>'}</tbody></table></div></div>
+      <div class="space-y-5">
+        <div class="card p-5"><div class="font-bold text-slate-900 mb-3">Quick actions</div><div class="grid grid-cols-2 gap-2">${[['students','Add Student'],['fees','Create Fee'],['payment','Payment Settings'],['reports','Reports']].map(([k,l])=>`<button class="btn btn-outline text-xs py-2.5" data-action="tab" data-tab="${k}">${l}</button>`).join('')}</div></div>
+        <div class="card p-5"><div class="font-bold text-slate-900 mb-3">Audit log</div><div class="space-y-2 max-h-56 overflow-y-auto pr-1">${db.audit_log.slice(0,8).map(a=>`<div class="text-xs flex justify-between gap-2"><span class="mono text-slate-700 truncate">${esc(a.action)}</span><span class="text-slate-400 shrink-0">${fmtDateTime(a.at)}</span></div>`).join('')||'<div class="text-xs text-slate-500">No entries.</div>'}</div></div>
+      </div>
+    </div></div>`;
+}
+
+function TStudents(db){
+  return `<div class="card overflow-hidden slide-up">
+    <div class="p-4 sm:p-5 flex items-center justify-between gap-3 flex-wrap"><div><div class="font-bold text-slate-900">Students</div><div class="text-xs text-slate-500">${db.students.length} record(s)</div></div><div class="flex gap-2"><input class="input py-2 text-sm w-44 sm:w-60" placeholder="Search…" id="student-search" data-action="search-students"><button class="btn btn-primary text-sm py-2" data-action="edit-student">+ Add Student</button></div></div>
+    <div class="table-wrap"><table class="tbl" id="students-table"><thead><tr><th>Student</th><th>Roll</th><th>Class / Stream</th><th>Year</th><th>Mobile</th><th>Pending</th><th>Status</th><th></th></tr></thead><tbody>
+    ${db.students.map(s=>{const pend=db.fees.filter(f=>f.student_id===s.id&&f.status==='PENDING').reduce((a,f)=>a+Number(f.amount),0);return `<tr data-search="${esc((s.name+' '+s.student_id+' '+s.class+' '+s.stream).toLowerCase())}"><td><div class="font-semibold">${esc(s.name)}</div><div class="text-[11px] mono text-slate-500">${esc(s.student_id)}</div></td><td>${esc(s.roll_no||'—')}</td><td>${esc(s.class)} ${esc(s.stream||'')}</td><td>${esc(s.academic_year)}</td><td>${esc(s.mobile||'—')}</td><td class="font-bold ${pend?'text-amber-700':'text-slate-500'}">${inr(pend)}</td><td>${s.active?'<span class="badge badge-paid">ACTIVE</span>':'<span class="badge badge-failed">INACTIVE</span>'}</td><td class="text-right whitespace-nowrap"><button class="btn btn-ghost text-xs py-1.5 px-2.5" data-action="edit-student" data-id="${s.id}">Edit</button><button class="btn btn-ghost text-xs py-1.5 px-2.5" data-action="student-pass" data-id="${s.id}">Password</button><button class="btn btn-ghost text-xs py-1.5 px-2.5" data-action="toggle-student" data-id="${s.id}">${s.active?'Deactivate':'Activate'}</button><button class="btn btn-danger text-xs py-1.5 px-2.5" data-action="delete-student" data-id="${s.id}">Delete</button></td></tr>`}).join('')}
+    </tbody></table></div></div>`;
+}
+
+function TFees(db){
+  return `<div class="card overflow-hidden slide-up">
+    <div class="p-4 sm:p-5 flex items-center justify-between gap-3 flex-wrap"><div><div class="font-bold text-slate-900">Fees</div><div class="text-xs text-slate-500">Create and manage fee items per student</div></div><button class="btn btn-primary text-sm py-2" data-action="edit-fee">+ Create Fee</button></div>
+    <div class="table-wrap"><table class="tbl"><thead><tr><th>Student</th><th>Fee Type</th><th>Description</th><th>Amount</th><th>Due Date</th><th>Status</th><th></th></tr></thead><tbody>
+    ${db.fees.slice().sort((a,b)=>new Date(b.created_at)-new Date(a.created_at)).map(f=>{const s=db.students.find(x=>x.id===f.student_id)||{};return `<tr><td><div class="font-semibold">${esc(s.name||'—')}</div><div class="text-[11px] mono text-slate-500">${esc(s.student_id||'')}</div></td><td class="font-semibold">${esc(f.fee_type)}</td><td class="text-slate-500 text-xs max-w-[200px] truncate">${esc(f.description||'—')}</td><td class="font-bold">${inr(f.amount)}</td><td>${fmtDate(f.due_date)}</td><td>${statusBadge(f.status)}</td><td class="text-right whitespace-nowrap">${f.status==='PENDING'?`<button class="btn btn-ghost text-xs py-1.5 px-2.5" data-action="edit-fee" data-id="${f.id}">Edit</button><button class="btn btn-danger text-xs py-1.5 px-2.5" data-action="delete-fee" data-id="${f.id}">Delete</button>`:'<span class="text-[11px] text-slate-400">Locked (paid)</span>'}</td></tr>`}).join('')||'<tr><td colspan="7" class="text-center py-8 text-slate-500">No fees created.</td></tr>'}
+    </tbody></table></div></div>`;
+}
+
+function TPending(db){
+  const rows = db.fees.filter(f=>f.status==='PENDING').map(f=>({f, s:db.students.find(x=>x.id===f.student_id)||{}, o:db.payments.find(p=>p.fee_id===f.id&&p.status==='CREATED')}));
+  return `<div class="card overflow-hidden slide-up"><div class="p-4 sm:p-5"><div class="font-bold text-slate-900">Pending Payments</div><div class="text-xs text-slate-500">${rows.length} unpaid fee(s) · ${inr(rows.reduce((a,r)=>a+Number(r.f.amount),0))} outstanding</div></div>
+    <div class="table-wrap"><table class="tbl"><thead><tr><th>Student</th><th>Fee Type</th><th>Amount</th><th>Due</th><th>Order Status</th><th>Order ID</th></tr></thead><tbody>${rows.map(({f,s,o})=>`<tr><td><div class="font-semibold">${esc(s.name)}</div><div class="text-[11px] mono text-slate-500">${esc(s.student_id)}</div></td><td>${esc(f.fee_type)}</td><td class="font-bold">${inr(f.amount)}</td><td>${fmtDate(f.due_date)}</td><td>${statusBadge(o?'CREATED':'PENDING')}</td><td class="mono text-xs">${esc(o?.order_id||'—')}</td></tr>`).join('')||'<tr><td colspan="6" class="text-center py-8 text-slate-500">No pending payments.</td></tr>'}</tbody></table></div></div>`;
+}
+
+function TCompleted(db){
+  const rows = db.payments.filter(p=>p.status==='PAID').sort((a,b)=>new Date(b.paid_at)-new Date(a.paid_at));
+  return `<div class="card overflow-hidden slide-up"><div class="p-4 sm:p-5 flex items-center justify-between flex-wrap gap-2"><div><div class="font-bold text-slate-900">Completed Payments</div><div class="text-xs text-slate-500">${rows.length} verified · ${inr(rows.reduce((a,p)=>a+Number(p.amount),0))} collected</div></div><button class="btn btn-outline text-sm py-2" data-action="export-csv">${I.download} Export CSV</button></div>
+    <div class="table-wrap"><table class="tbl"><thead><tr><th>Student</th><th>Fee</th><th>Amount</th><th>Method</th><th>Order ID</th><th>Transaction ID</th><th>Paid At</th><th>Mode</th><th></th></tr></thead><tbody>${rows.map(p=>{const s=db.students.find(x=>x.id===p.student_id)||{};const f=db.fees.find(x=>x.id===p.fee_id)||{};return `<tr><td><div class="font-semibold">${esc(s.name)}</div><div class="text-[11px] mono text-slate-500">${esc(s.student_id)}</div></td><td>${esc(f.fee_type||'—')}</td><td class="font-bold text-brand-700">${inr(p.amount)}</td><td>${esc(p.payment_method||'—')}</td><td class="mono text-xs">${esc(p.order_id)}</td><td class="mono text-xs">${esc(p.transaction_id)}</td><td class="text-xs">${fmtDateTime(p.paid_at)}</td><td>${p.mode==='sandbox'?'<span class="badge badge-test">TEST</span>':'<span class="badge badge-paid">LIVE</span>'}</td><td><button class="btn btn-outline text-xs py-1.5 px-2.5" data-action="receipt" data-payment="${p.id}">Receipt</button></td></tr>`}).join('')||'<tr><td colspan="9" class="text-center py-8 text-slate-500">No completed payments.</td></tr>'}</tbody></table></div></div>`;
+}
+
+function TReceipts(db){
+  const rows = db.receipts.slice().sort((a,b)=>new Date(b.generated_at)-new Date(a.generated_at));
+  return `<div class="card overflow-hidden slide-up"><div class="p-4 sm:p-5"><div class="font-bold text-slate-900">Receipts</div><div class="text-xs text-slate-500">Auto-generated after verified payments · ${rows.length} issued</div></div>
+    <div class="table-wrap"><table class="tbl"><thead><tr><th>Receipt No</th><th>Student</th><th>Fee</th><th>Amount</th><th>Transaction ID</th><th>Generated</th><th></th></tr></thead><tbody>${rows.map(r=>{const p=db.payments.find(x=>x.id===r.payment_id)||{};const s=db.students.find(x=>x.id===p.student_id)||{};const f=db.fees.find(x=>x.id===p.fee_id)||{};return `<tr><td class="mono font-semibold text-xs">${esc(r.receipt_no)}</td><td>${esc(s.name)}</td><td>${esc(f.fee_type||'—')}</td><td class="font-bold">${inr(p.amount)}</td><td class="mono text-xs">${esc(p.transaction_id)}</td><td class="text-xs">${fmtDateTime(r.generated_at)}</td><td><button class="btn btn-outline text-xs py-1.5 px-2.5" data-action="receipt" data-payment="${p.id}">Open</button></td></tr>`}).join('')||'<tr><td colspan="7" class="text-center py-8 text-slate-500">No receipts.</td></tr>'}</tbody></table></div></div>`;
+}
+
+function TReports(db){
+  const paid = db.payments.filter(p=>p.status==='PAID'); const collected = paid.reduce((a,p)=>a+Number(p.amount),0);
+  const pendingTotal = db.fees.filter(f=>f.status==='PENDING').reduce((a,f)=>a+Number(f.amount),0);
+  const byType = {}; db.fees.forEach(f=>{ byType[f.fee_type] = byType[f.fee_type]||{paid:0,pending:0}; byType[f.fee_type][f.status==='PAID'?'paid':'pending'] += Number(f.amount); });
+  const byMonth = {}; paid.forEach(p=>{ const d=new Date(p.paid_at); const k=d.toLocaleString('en-IN',{month:'short',year:'2-digit'}); byMonth[k]=(byMonth[k]||0)+Number(p.amount); });
+  const maxM = Math.max(1,...Object.values(byMonth)); const total = collected+pendingTotal||1;
+  return `<div class="grid lg:grid-cols-2 gap-5 stagger">
+    <div class="card p-5"><div class="font-bold text-slate-900">Collection overview</div><div class="mt-4 h-4 rounded-full bg-slate-100 overflow-hidden flex"><div class="bg-brand-500 h-full transition-all" style="width:${(collected/total*100).toFixed(1)}%"></div><div class="bg-amber-400 h-full" style="width:${(pendingTotal/total*100).toFixed(1)}%"></div></div><div class="mt-3 grid grid-cols-2 gap-3 text-sm"><div><div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-brand-500"></span>Collected</div><div class="text-2xl font-extrabold text-slate-900">${inr(collected)}</div></div><div><div class="flex items-center gap-2"><span class="w-3 h-3 rounded bg-amber-400"></span>Outstanding</div><div class="text-2xl font-extrabold text-slate-900">${inr(pendingTotal)}</div></div></div><div class="mt-3 text-xs text-slate-500">${paid.length} verified payments · ${db.fees.filter(f=>f.status==='PENDING').length} pending items · ${db.students.length} students</div></div>
+    <div class="card p-5"><div class="font-bold text-slate-900">Monthly collections</div><div class="mt-4 flex items-end gap-3 h-40">${Object.entries(byMonth).map(([k,v])=>`<div class="flex-1 flex flex-col items-center gap-1 h-full justify-end"><div class="text-[11px] font-semibold text-slate-700">${inr(v)}</div><div class="w-full max-w-[48px] rounded-t-lg bg-gradient-to-t from-brand-700 to-brand-400 transition-all" style="height:${(v/maxM*100).toFixed(0)}%"></div><div class="text-[11px] text-slate-500">${k}</div></div>`).join('')||'<div class="text-sm text-slate-500 m-auto">No verified payments yet.</div>'}</div></div>
+    <div class="card p-5 lg:col-span-2"><div class="font-bold text-slate-900 mb-3">Breakdown by fee type</div><div class="table-wrap"><table class="tbl"><thead><tr><th>Fee Type</th><th>Collected</th><th>Pending</th><th>Progress</th></tr></thead><tbody>${Object.entries(byType).map(([k,v])=>{const t=v.paid+v.pending||1;return `<tr><td class="font-semibold">${esc(k)}</td><td class="text-brand-700 font-bold">${inr(v.paid)}</td><td class="text-amber-700 font-bold">${inr(v.pending)}</td><td class="w-1/3"><div class="h-2.5 rounded-full bg-slate-100 overflow-hidden"><div class="h-full bg-brand-500" style="width:${(v.paid/t*100).toFixed(0)}%"></div></div></td></tr>`}).join('')||'<tr><td colspan="4" class="text-center py-6 text-slate-500">No data.</td></tr>'}</tbody></table></div></div>
+  </div>`;
+}
+
+function TPaymentSettings(db){
+  const ps = db.payment_settings;
+  const openOrders = db.payments.filter(p=>p.status==='CREATED');
+  return `<div class="grid lg:grid-cols-5 gap-5 stagger">
+    <form id="payment-settings-form" class="card p-5 sm:p-6 lg:col-span-3 space-y-4">
+      <div class="flex items-start justify-between gap-3"><div><div class="font-bold text-slate-900">Payment destination & gateway</div><div class="text-xs text-slate-500">Teacher/Admin only. These values are stored server-side and are <b>never</b> sent to the Student Portal.</div></div><span class="badge bg-slate-900 text-white shrink-0">${I.lock} Restricted</span></div>
+      <div class="grid sm:grid-cols-2 gap-4">
+        <div><label class="label">UPI ID (payment destination)</label><input class="input mono" name="upi_id" value="${esc(ps.upi_id)}" required placeholder="name@bank"></div>
+        <div><label class="label">Payee name (shown in UPI app)</label><input class="input" name="payee_name" value="${esc(ps.payee_name)}" required></div>
+        <div><label class="label">Gateway provider</label><input class="input" name="gateway_provider" value="${esc(ps.gateway_provider)}"></div>
+        <div><label class="label">Gateway mode</label><select class="input" name="gateway_mode"><option value="sandbox" ${ps.gateway_mode==='sandbox'?'selected':''}>Sandbox / Test</option><option value="live" ${ps.gateway_mode==='live'?'selected':''}>Live (authorised credentials required)</option></select></div>
+        <div><label class="label">Gateway Key ID (public)</label><input class="input mono" name="gateway_key_id" value="${esc(ps.gateway_key_id)}" placeholder="rzp_test_…"></div>
+        <div><label class="label">Gateway Key Secret</label><div class="input bg-slate-50 text-slate-500 text-sm flex items-center justify-between"><span class="mono">${ps.gateway_key_secret_set?'••••••••••••••••':'not set'}</span><span class="text-[10px] font-bold uppercase">.env only</span></div></div>
+        <div><label class="label">Webhook secret</label><div class="input bg-slate-50 text-slate-500 text-sm flex items-center justify-between"><span class="mono">••••••••••••</span><span class="text-[10px] font-bold uppercase">.env only</span></div></div>
+        <div><label class="label">QR size (px)</label><input class="input" type="number" min="160" max="320" name="qr_size" value="${esc(ps.qr_size)}"></div>
+      </div>
+      <div class="rounded-xl bg-amber-50 border border-amber-200 p-3 text-xs text-amber-900"><b>Where to add real credentials:</b> set <code class="mono">PAYMENT_GATEWAY_KEY_ID</code>, <code class="mono">PAYMENT_GATEWAY_KEY_SECRET</code> and <code class="mono">PAYMENT_WEBHOOK_SECRET</code> in the server <code class="mono">.env</code> using the authorised college gateway account, then switch mode to <b>Live</b>. Secrets are never editable or visible from any browser page.</div>
+      <div class="flex justify-end"><button class="btn btn-primary" type="submit">Save payment settings</button></div>
+    </form>
+    <div class="card p-5 sm:p-6 lg:col-span-2 space-y-4">
+      <div><div class="font-bold text-slate-900">Sandbox webhook tester</div><div class="text-xs text-slate-500">Simulates the gateway calling <code class="mono">POST /api/payments/webhook</code>. The server accepts it only if the HMAC-SHA256 signature is valid, the order exists, amount matches, and it hasn't been processed before. <b>Test mode only</b> — resulting records are watermarked TEST MODE.</div></div>
+      ${ps.gateway_mode!=='sandbox'?`<div class="rounded-xl bg-red-50 border border-red-200 p-3 text-xs text-red-700">Disabled in Live mode. Real webhooks are delivered by the gateway.</div>`:`
+      <form id="webhook-form" class="space-y-3">
+        <div><label class="label">Open order</label><select class="input" name="order_id" required>${openOrders.map(o=>{const s=db.students.find(x=>x.id===o.student_id)||{};return `<option value="${esc(o.order_id)}" data-amount="${o.amount}">${esc(o.order_id)} · ${esc(s.name)} · ${inr(o.amount)}</option>`}).join('')||'<option value="">No open orders (student must click Pay Now first)</option>'}</select></div>
+        <div><label class="label">Gateway test transaction ID</label><input class="input mono" name="transaction_id" required placeholder="e.g. pay_test_…" value="pay_test_${Date.now().toString(36)}"></div>
+        <div class="grid grid-cols-2 gap-3"><div><label class="label">Method</label><select class="input" name="method"><option>UPI</option><option>Card</option><option>NetBanking</option></select></div><div><label class="label">Signature mode</label><select class="input" name="sigmode"><option value="valid">Valid (signed with secret)</option><option value="invalid">Invalid (tamper test)</option></select></div></div>
+        <button class="btn btn-primary w-full" type="submit" ${openOrders.length?'':'disabled'}>Send signed test webhook</button>
+      </form>
+      <div id="webhook-result" class="hidden rounded-xl p-3 text-xs mono break-all"></div>`}
+      <div class="border-t border-slate-100 pt-4"><div class="text-xs font-bold text-slate-700 uppercase mb-2">Production flow</div><div class="text-xs text-slate-500 leading-relaxed">Frontend → Backend (<code class="mono">/create-order</code>) → Gateway → UPI/Card → Gateway webhook (signed) → Backend verifies signature → DB <code class="mono">payments.status='PAID'</code> → Receipt → Student sees Completed Payment.</div></div>
+      <button class="btn btn-danger w-full text-sm" data-action="reset-demo">Reset demo data</button>
+    </div>
+  </div>`;
+}
+
+function TCollege(db){
+  const c = db.college_settings;
+  return `<form id="college-form" class="card p-5 sm:p-6 max-w-3xl space-y-4 slide-up">
+    <div class="flex items-center gap-4">${logo(c,'w-14 h-14 text-lg')}<div><div class="font-bold text-slate-900">College settings</div><div class="text-xs text-slate-500">Branding shown across both portals and on receipts</div></div></div>
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="sm:col-span-2"><label class="label">College name</label><input class="input" name="name" value="${esc(c.name)}" required></div>
+      <div><label class="label">Tagline</label><input class="input" name="tagline" value="${esc(c.tagline)}"></div>
+      <div><label class="label">Logo text (2–4 letters)</label><input class="input" name="logo_text" maxlength="4" value="${esc(c.logo_text)}"></div>
+      <div class="sm:col-span-2"><label class="label">Address</label><input class="input" name="address" value="${esc(c.address)}"></div>
+      <div><label class="label">Phone</label><input class="input" name="phone" value="${esc(c.phone)}"></div>
+      <div><label class="label">Email</label><input class="input" type="email" name="email" value="${esc(c.email)}"></div>
+      <div class="sm:col-span-2"><label class="label">Website</label><input class="input" name="website" value="${esc(c.website)}"></div>
+    </div>
+    <div class="text-xs text-slate-500">Logo upload: in production, upload to <code class="mono">public/assets/logo.png</code> via the admin API; this demo uses a monogram badge.</div>
+    <div class="flex justify-end"><button class="btn btn-primary" type="submit">Save college settings</button></div>
+  </form>`;
+}
+
+/* ---------------- Admin modals ---------------- */
+function modal(title, bodyHtml, formId){
+  $('#modal-root').innerHTML = `<div class="fixed inset-0 z-[80] modal-bg bg-slate-900/60 backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4" data-action="close-modal-bg"><div class="modal-box bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl shadow-2xl max-h-[95vh] overflow-y-auto" data-stop><div class="p-5 sm:p-6 flex items-center justify-between border-b border-slate-100"><div class="font-bold text-slate-900">${title}</div><button class="btn btn-ghost p-1.5" data-action="close-modal">✕</button></div><form id="${formId}" class="p-5 sm:p-6 space-y-4">${bodyHtml}</form></div></div>`;
+}
+function studentModal(id){
+  const s = id ? Server.db.students.find(x=>x.id===id) : { student_id:'', roll_no:'', name:'', class:'', stream:'', academic_year:'2026-27', mobile:'' };
+  modal(id?'Edit student':'Add student', `
+    <input type="hidden" name="id" value="${esc(s.id||'')}">
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="sm:col-span-2"><label class="label">Student name</label><input class="input" name="name" value="${esc(s.name)}" required></div>
+      <div><label class="label">Student ID</label><input class="input mono" name="student_id" value="${esc(s.student_id)}" required></div>
+      <div><label class="label">Roll number</label><input class="input" name="roll_no" value="${esc(s.roll_no||'')}"></div>
+      <div><label class="label">Class</label><input class="input" name="class" value="${esc(s.class)}" placeholder="12th" required></div>
+      <div><label class="label">Stream</label><input class="input" name="stream" value="${esc(s.stream||'')}" placeholder="Commerce"></div>
+      <div><label class="label">Academic year</label><input class="input" name="academic_year" value="${esc(s.academic_year)}" required></div>
+      <div><label class="label">Mobile (optional)</label><input class="input" name="mobile" value="${esc(s.mobile||'')}" inputmode="tel"></div>
+      ${!id?`<div class="sm:col-span-2"><label class="label">Initial password</label><input class="input" name="password" type="text" value="student123" required minlength="6"><div class="text-[11px] text-slate-500 mt-1">Stored as a hash. Student should change it after first login.</div></div>`:''}
+    </div>
+    <div class="flex justify-end gap-2"><button type="button" class="btn btn-outline" data-action="close-modal">Cancel</button><button class="btn btn-primary" type="submit">${id?'Save changes':'Add student'}</button></div>`, 'student-form');
+}
+function feeModal(id){
+  const f = id ? Server.db.fees.find(x=>x.id===id) : { student_id: Server.db.students[0]?.id||'', fee_type:'Other/Misc Fee', amount:'', due_date:'', description:'' };
+  modal(id?'Edit fee':'Create fee', `
+    <input type="hidden" name="id" value="${esc(f.id||'')}">
+    <div class="grid sm:grid-cols-2 gap-4">
+      <div class="sm:col-span-2"><label class="label">Student</label><select class="input" name="student_id" required>${Server.db.students.map(s=>`<option value="${s.id}" ${s.id===f.student_id?'selected':''}>${esc(s.name)} (${esc(s.student_id)})</option>`).join('')}</select></div>
+      <div><label class="label">Fee type</label><input class="input" name="fee_type" list="fee-types" value="${esc(f.fee_type)}" required><datalist id="fee-types"><option>Tuition Fee</option><option>Exam Fee</option><option>Library Fee</option><option>Laboratory Fee</option><option>Other/Misc Fee</option></datalist></div>
+      <div><label class="label">Amount (₹)</label><input class="input" name="amount" type="number" min="1" step="0.01" value="${esc(f.amount)}" required></div>
+      <div><label class="label">Due date</label><input class="input" name="due_date" type="date" value="${esc(f.due_date||'')}"></div>
+      <div><label class="label">Status</label><div class="input bg-slate-50 text-slate-500 text-sm">PENDING — becomes PAID only via verified gateway webhook</div></div>
+      <div class="sm:col-span-2"><label class="label">Description</label><input class="input" name="description" value="${esc(f.description||'')}"></div>
+    </div>
+    <div class="flex justify-end gap-2"><button type="button" class="btn btn-outline" data-action="close-modal">Cancel</button><button class="btn btn-primary" type="submit">${id?'Save changes':'Create fee'}</button></div>`, 'fee-form');
+}
+function passwordModal(id){
+  const s = Server.db.students.find(x=>x.id===id);
+  modal(`Reset password — ${esc(s.name)}`, `<input type="hidden" name="id" value="${id}"><div><label class="label">New password</label><input class="input" name="password" type="text" required minlength="6" placeholder="min 6 characters"></div><div class="flex justify-end gap-2"><button type="button" class="btn btn-outline" data-action="close-modal">Cancel</button><button class="btn btn-primary" type="submit">Set password</button></div>`, 'password-form');
+}
+function confirmModal(title, msg, onYes){
+  modal(title, `<p class="text-sm text-slate-600">${msg}</p><div class="flex justify-end gap-2"><button type="button" class="btn btn-outline" data-action="close-modal">Cancel</button><button class="btn btn-danger" type="submit">Confirm</button></div>`, 'confirm-form');
+  $('#confirm-form').addEventListener('submit', e=>{ e.preventDefault(); closeModal(); onYes(); });
+}
+function closeModal(){ $('#modal-root').innerHTML = ''; }
+function exportCSV(){
+  const db = Server.adminView(App.session);
+  const rows = [['Receipt No','Student','Student ID','Fee Type','Amount','Order ID','Transaction ID','Method','Paid At','Mode']];
+  db.payments.filter(p=>p.status==='PAID').forEach(p=>{ const s=db.students.find(x=>x.id===p.student_id)||{}; const f=db.fees.find(x=>x.id===p.fee_id)||{}; const r=db.receipts.find(x=>x.payment_id===p.id)||{}; rows.push([r.receipt_no||'',s.name||'',s.student_id||'',f.fee_type||'',p.amount,p.order_id,p.transaction_id,p.payment_method||'',p.paid_at,p.mode||'']); });
+  const csv = rows.map(r=>r.map(v=>`"${String(v??'').replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv],{type:'text/csv'})); a.download = 'completed-payments.csv'; a.click(); toast('CSV exported.', 'success');
+}
+
+/* ==================================================================
+   EVENT HANDLING (delegated)
+================================================================== */
+document.addEventListener('click', async (e) => {
+  const t = e.target.closest('[data-action]'); if(!t) return;
+  const a = t.dataset.action;
+  if(a === 'close-modal-bg'){ if(e.target === t) closeModal(); return; }
+  if(a === 'close-drawer'){ if(e.target === t){ App.drawerOpen=false; render(); } return; }
+  switch(a){
+    case 'go': App.go(t.dataset.view, t.dataset.view==='landing'?'home':undefined); break;
+    case 'tab': App.tab = t.dataset.tab; sessionStorage.setItem('aki_tab', App.tab); App.stopPolling(); App.drawerOpen=false; render(); window.scrollTo({top:0,behavior:'smooth'}); break;
+    case 'logout': App.logout(); break;
+    case 'toggle-pass': { const inp = t.parentElement.querySelector('input'); inp.type = inp.type==='password'?'text':'password'; t.textContent = inp.type==='password'?'Show':'Hide'; break; }
+    case 'checkout': {
+      t.disabled = true; t.innerHTML = '<span class="spinner"></span> Creating order…';
+      try { App.payOrder = await Server.createOrder(App.session.id, t.dataset.fee); App.tab='checkout'; render(); }
+      catch(err){ toast(err.message,'error'); render(); }
+      break; }
+    case 'receipt': openReceipt(t.dataset.payment); break;
+    case 'print': window.print(); break;
+    case 'download-receipt': downloadReceipt(t.dataset.receipt); break;
+    case 'close-modal': closeModal(); break;
+    case 'open-drawer': App.drawerOpen = true; render(); break;
+    case 'edit-student': studentModal(t.dataset.id); break;
+    case 'student-pass': passwordModal(t.dataset.id); break;
+    case 'toggle-student': Server.toggleStudent(App.session, t.dataset.id); toast('Student status updated.','success'); render(); break;
+    case 'delete-student': confirmModal('Delete student?', 'This removes the student and their unpaid fees. Students with verified payments cannot be deleted (deactivate instead).', ()=>{ try{ Server.deleteStudent(App.session, t.dataset.id); toast('Student deleted.','success'); }catch(err){ toast(err.message,'error'); } render(); }); break;
+    case 'edit-fee': feeModal(t.dataset.id); break;
+    case 'delete-fee': confirmModal('Delete fee?', 'This pending fee item will be removed permanently.', ()=>{ try{ Server.deleteFee(App.session, t.dataset.id); toast('Fee deleted.','success'); }catch(err){ toast(err.message,'error'); } render(); }); break;
+    case 'export-csv': exportCSV(); break;
+    case 'reset-demo': confirmModal('Reset demo data?', 'All students, fees, payments and settings return to the initial test data.', async ()=>{ await Server.resetDemo(); toast('Demo data reset.','success'); render(); }); break;
+  }
+});
+
+document.addEventListener('input', (e) => {
+  if(e.target.dataset.action === 'search-students'){ const q = e.target.value.toLowerCase(); document.querySelectorAll('#students-table tbody tr').forEach(tr => tr.style.display = tr.dataset.search.includes(q) ? '' : 'none'); }
+});
+
+document.addEventListener('submit', async (e) => {
+  const f = e.target; const fd = Object.fromEntries(new FormData(f).entries());
+  if(f.id === 'login-form'){
+    e.preventDefault(); const btn = $('#login-btn'), err = $('#login-err'); btn.disabled = true; btn.innerHTML = '<span class="spinner border-white/40 border-t-white"></span> Signing in…'; err.classList.add('hidden');
+    try { const s = f.dataset.role === 'teacher' ? await Server.loginTeacher(fd.user, fd.pass) : await Server.loginStudent(fd.user, fd.pass); App.setSession(s); toast(`Welcome, ${s.name}!`, 'success'); App.go(s.role==='teacher'?'teacher':'student', s.role==='teacher'?'dashboard':'home'); }
+    catch(ex){ err.textContent = ex.message; err.classList.remove('hidden'); btn.disabled=false; btn.textContent='Sign in'; }
+    return;
+  }
+  if(f.id === 'student-form'){ e.preventDefault(); try { const pw = fd.password; delete fd.password; if(!fd.id) delete fd.id; Server.upsertStudent(App.session, fd); if(pw){ const s = Server.db.students.find(x=>x.student_id===fd.student_id); await Server.setStudentPassword(App.session, s.id, pw); } toast('Student saved.','success'); closeModal(); render(); } catch(ex){ toast(ex.message,'error'); } return; }
+  if(f.id === 'fee-form'){ e.preventDefault(); try { if(!fd.id) delete fd.id; Server.upsertFee(App.session, fd); toast('Fee saved.','success'); closeModal(); render(); } catch(ex){ toast(ex.message,'error'); } return; }
+  if(f.id === 'password-form'){ e.preventDefault(); try { await Server.setStudentPassword(App.session, fd.id, fd.password); toast('Password updated.','success'); closeModal(); } catch(ex){ toast(ex.message,'error'); } return; }
+  if(f.id === 'college-form'){ e.preventDefault(); try { Server.saveCollege(App.session, fd); toast('College settings saved.','success'); render(); } catch(ex){ toast(ex.message,'error'); } return; }
+  if(f.id === 'payment-settings-form'){ e.preventDefault(); try { fd.qr_size = Number(fd.qr_size)||220; Server.savePaymentSettings(App.session, fd); toast('Payment settings saved (server-side).','success'); render(); } catch(ex){ toast(ex.message,'error'); } return; }
+  if(f.id === 'webhook-form'){
+    e.preventDefault();
+    // This simulates the GATEWAY (not the student) delivering a signed event to the backend.
+    const order = Server.db.payments.find(p=>p.order_id===fd.order_id);
+    const body = JSON.stringify({ event:'payment.captured', order_id:fd.order_id, amount:order?.amount, transaction_id:fd.transaction_id, method:fd.method, paid_at:new Date().toISOString() });
+    const signature = fd.sigmode === 'valid' ? await hmacSha256(Server.db.payment_settings.webhook_secret, body) : 'deadbeef'.repeat(8);
+    const out = $('#webhook-result'); out.classList.remove('hidden'); out.className = 'rounded-xl p-3 text-xs mono break-all bg-slate-100 text-slate-600'; out.textContent = 'POST /api/payments/webhook … verifying signature';
+    const res = await Server.webhook(body, signature);
+    out.className = `rounded-xl p-3 text-xs mono break-all ${res.ok?'bg-emerald-50 text-emerald-800 border border-emerald-200':'bg-red-50 text-red-700 border border-red-200'}`;
+    out.textContent = `HTTP ${res.http} — ${res.message}`;
+    toast(res.message, res.ok ? 'success' : 'error');
+    if(res.ok && res.message.startsWith('Verified')) setTimeout(render, 1500);
+    return;
+  }
+});
+
+/* ==================================================================
+   BOOT
+================================================================== */
+(async function boot(){
+  $('#app').innerHTML = `<div class="min-h-screen grid place-items-center bg-brand-50"><div class="text-center"><div class="w-14 h-14 mx-auto rounded-2xl bg-gradient-to-br from-brand-500 to-brand-800 text-white font-extrabold grid place-items-center shadow-lg">APC</div><div class="mt-4 flex items-center gap-2 justify-center text-sm text-slate-600"><span class="spinner"></span> Loading portal…</div></div></div>`;
+  await Server.init();
+  render();
+})();
+</script>
+</body>
+</html>
